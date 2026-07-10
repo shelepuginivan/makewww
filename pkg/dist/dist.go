@@ -17,6 +17,10 @@ func FromRoot(root string) *Dist {
 func (d *Dist) CreateOutputFile(path string) (*os.File, error) {
 	filePath := filepath.Join(d.root, path)
 
+	if err := os.MkdirAll(filepath.Dir(filePath), 0755); err != nil {
+		return nil, fmt.Errorf("failed to create dir: %w", err)
+	}
+
 	f, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create output file: %w", err)

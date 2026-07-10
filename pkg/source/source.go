@@ -10,11 +10,6 @@ import (
 	"github.com/shelepuginivan/makewww/pkg/document"
 )
 
-const (
-	ContentDir   = "content"
-	TemplatesDir = "templates"
-)
-
 type Source struct {
 	root string
 }
@@ -23,10 +18,18 @@ func FromProjectRoot(root string) *Source {
 	return &Source{root: root}
 }
 
+func (src *Source) ContentDir() string {
+	return filepath.Join(src.root, "content")
+}
+
+func (src *Source) TemplatesDir() string {
+	return filepath.Join(src.root, "templates")
+}
+
 func (src *Source) GetDocuments() ([]document.Document, error) {
 	var documents []document.Document
 
-	err := filepath.Walk(filepath.Join(src.root, ContentDir), func(path string, info fs.FileInfo, err error) error {
+	err := filepath.Walk(src.ContentDir(), func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -61,7 +64,7 @@ func (src *Source) GetTemplate(path string) (*template.Template, error) {
 		return nil, fmt.Errorf("template path must be absolute")
 	}
 
-	tmplPath := filepath.Join(src.root, path)
+	tmplPath := filepath.Join(src.TemplatesDir(), path)
 	tmpl, err := template.ParseFiles(tmplPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get template: %w", err)

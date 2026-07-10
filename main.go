@@ -2,41 +2,19 @@ package main
 
 import (
 	"log"
-	"os"
-	"path/filepath"
 
-	"github.com/shelepuginivan/makewww/pkg/dist"
-	"github.com/shelepuginivan/makewww/pkg/source"
+	"github.com/shelepuginivan/makewww/pkg/builder"
+	"github.com/shelepuginivan/makewww/pkg/config"
 )
 
 func main() {
-	cwd, err := os.Getwd()
+	cfg, err := config.Parse()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	src := source.FromProjectRoot(cwd)
-	dist := dist.FromRoot(filepath.Join(cwd, "dist"))
-
-	docs, err := src.GetDocuments()
-	if err != nil {
+	builder := builder.New(cfg)
+	if err := builder.Build(); err != nil {
 		log.Fatal(err)
-	}
-
-	for _, doc := range docs {
-		p, err := doc.CanonicalPath(src.ContentDir())
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		f, err := dist.CreateOutputFile(p)
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer f.Close()
-
-		if err := doc.Render(f); err != nil {
-			log.Fatal(err)
-		}
 	}
 }

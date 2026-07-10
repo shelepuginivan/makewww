@@ -1,4 +1,4 @@
-package document
+package source
 
 import (
 	"fmt"
@@ -12,7 +12,7 @@ type HTML struct {
 	path string
 }
 
-func HTMLFromPath(path string) *HTML {
+func htmlFromPath(path string) *HTML {
 	return &HTML{path: path}
 }
 

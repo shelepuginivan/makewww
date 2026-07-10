@@ -6,8 +6,6 @@ import (
 	"path/filepath"
 	"strings"
 	"text/template"
-
-	"github.com/shelepuginivan/makewww/pkg/document"
 )
 
 type Source struct {
@@ -26,8 +24,8 @@ func (src *Source) TemplatesDir() string {
 	return filepath.Join(src.root, "templates")
 }
 
-func (src *Source) GetDocuments() ([]document.Document, error) {
-	var documents []document.Document
+func (src *Source) GetDocuments() ([]Document, error) {
+	var documents []Document
 
 	err := filepath.Walk(src.ContentDir(), func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
@@ -38,15 +36,15 @@ func (src *Source) GetDocuments() ([]document.Document, error) {
 			return nil
 		}
 
-		var d document.Document
+		var d Document
 
 		switch {
 		case strings.HasSuffix(path, ".html.tmpl"):
-			d = document.HTMLFromPath(path)
+			d = htmlFromPath(path)
 		case strings.HasSuffix(path, ".md.tmpl"):
-			d = document.MarkdownFromPath(path)
+			d = markdownFromPath(path)
 		default:
-			d = document.RawFromPath(path)
+			return nil
 		}
 
 		documents = append(documents, d)

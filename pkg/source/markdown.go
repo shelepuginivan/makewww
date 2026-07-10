@@ -1,4 +1,4 @@
-package document
+package source
 
 import (
 	"fmt"
@@ -12,7 +12,7 @@ type Markdown struct {
 	path string
 }
 
-func MarkdownFromPath(path string) *Markdown {
+func markdownFromPath(path string) *Markdown {
 	return &Markdown{path: path}
 }
 

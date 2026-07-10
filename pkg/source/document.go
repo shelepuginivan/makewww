@@ -1,8 +1,17 @@
 package source
 
-import "io"
+import "time"
+
+type Metadata struct {
+	Title       string         `yaml:"title"`
+	Description string         `yaml:"description"`
+	CreatedAt   time.Time      `yaml:"created_at"`
+	Draft       bool           `yaml:"draft"`
+	Data        map[string]any `yaml:"data"`
+}
 
 type Document interface {
+	Metadata() *Metadata
+	Content() string
 	CanonicalPath(base string) (string, error)
-	Render(w io.Writer) error
 }

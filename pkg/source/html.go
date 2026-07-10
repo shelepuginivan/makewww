@@ -2,33 +2,36 @@ package source
 
 import (
 	"fmt"
-	"io"
+	"os"
 	"path/filepath"
 	"strings"
-	"text/template"
 )
 
-type HTML struct {
-	path string
+type HTMLDocument struct {
+	path    string
+	content string
 }
 
-func htmlFromPath(path string) *HTML {
-	return &HTML{path: path}
-}
-
-func (h *HTML) Render(w io.Writer) error {
-	tmpl, err := template.ParseFiles(h.path)
+func htmlFromPath(path string) (*HTMLDocument, error) {
+	content, err := os.ReadFile(path)
 	if err != nil {
-		return fmt.Errorf("failed to parse html document: %w", err)
+		return nil, fmt.Errorf("failed to read %s: %w", path, err)
 	}
 
-	if err := tmpl.Execute(w, struct{}{}); err != nil {
-		return fmt.Errorf("failed to render html document: %w", err)
-	}
+	return &HTMLDocument{
+		path:    path,
+		content: string(content),
+	}, nil
+}
 
+func (doc *HTMLDocument) Metadata() *Metadata {
 	return nil
 }
 
-func (h *HTML) CanonicalPath(base string) (string, error) {
-	return filepath.Rel(base, strings.TrimSuffix(h.path, ".tmpl"))
+func (doc *HTMLDocument) Content() string {
+	return doc.content
+}
+
+func (doc *HTMLDocument) CanonicalPath(base string) (string, error) {
+	return filepath.Rel(base, strings.TrimSuffix(doc.path, ".tmpl"))
 }

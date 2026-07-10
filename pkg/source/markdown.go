@@ -1,34 +1,51 @@
 package source
 
 import (
+	"bytes"
 	"fmt"
-	"io"
+	"os"
 	"path/filepath"
 	"strings"
-	"text/template"
+
+	"github.com/goccy/go-yaml"
 )
 
-type Markdown struct {
-	path string
+type MarkdownDocument struct {
+	path     string
+	content  string
+	metadata *Metadata
 }
 
-func markdownFromPath(path string) *Markdown {
-	return &Markdown{path: path}
-}
-
-func (m *Markdown) Render(w io.Writer) error {
-	tmpl, err := template.ParseFiles(m.path)
+func markdownFromPath(path string) (*MarkdownDocument, error) {
+	content, err := os.ReadFile(path)
 	if err != nil {
-		return fmt.Errorf("failed to parse markdown document: %w", err)
+		return nil, fmt.Errorf("failed to read %s: %w", path, err)
 	}
 
-	if err := tmpl.Execute(w, struct{}{}); err != nil {
-		return fmt.Errorf("failed to render markdown document: %w", err)
+	frontmatter, text, ok := bytes.Cut(content, []byte("\n---\n"))
+	var metadata *Metadata
+	if ok {
+		metadata = &Metadata{}
+		if err := yaml.Unmarshal(frontmatter, metadata); err != nil {
+			return nil, fmt.Errorf("failed to parse metadata: %w", err)
+		}
 	}
 
-	return nil
+	return &MarkdownDocument{
+		path:     path,
+		content:  string(text),
+		metadata: metadata,
+	}, nil
 }
 
-func (m *Markdown) CanonicalPath(base string) (string, error) {
+func (doc *MarkdownDocument) Metadata() *Metadata {
+	return doc.metadata
+}
+
+func (doc *MarkdownDocument) Content() string {
+	return doc.content
+}
+
+func (m *MarkdownDocument) CanonicalPath(base string) (string, error) {
 	return filepath.Rel(base, strings.TrimSuffix(m.path, ".md.tmpl")+".html")
 }

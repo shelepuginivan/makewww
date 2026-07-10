@@ -40,11 +40,15 @@ func (src *Source) GetDocuments() ([]Document, error) {
 
 		switch {
 		case strings.HasSuffix(path, ".html.tmpl"):
-			d = htmlFromPath(path)
+			d, err = htmlFromPath(path)
 		case strings.HasSuffix(path, ".md.tmpl"):
-			d = markdownFromPath(path)
+			d, err = markdownFromPath(path)
 		default:
 			return nil
+		}
+
+		if err != nil {
+			return err
 		}
 
 		documents = append(documents, d)

@@ -3,6 +3,8 @@ package document
 import (
 	"fmt"
 	"io"
+	"path/filepath"
+	"strings"
 	"text/template"
 )
 
@@ -25,4 +27,8 @@ func (h *HTML) Render(w io.Writer) error {
 	}
 
 	return nil
+}
+
+func (h *HTML) CanonicalPath(base string) (string, error) {
+	return filepath.Rel(base, strings.TrimSuffix(h.path, ".tmpl"))
 }

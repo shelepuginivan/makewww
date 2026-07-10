@@ -3,6 +3,8 @@ package document
 import (
 	"fmt"
 	"io"
+	"path/filepath"
+	"strings"
 	"text/template"
 )
 
@@ -14,8 +16,8 @@ func MarkdownFromPath(path string) *Markdown {
 	return &Markdown{path: path}
 }
 
-func (d *Markdown) Render(w io.Writer) error {
-	tmpl, err := template.ParseFiles(d.path)
+func (m *Markdown) Render(w io.Writer) error {
+	tmpl, err := template.ParseFiles(m.path)
 	if err != nil {
 		return fmt.Errorf("failed to parse markdown document: %w", err)
 	}
@@ -25,4 +27,8 @@ func (d *Markdown) Render(w io.Writer) error {
 	}
 
 	return nil
+}
+
+func (m *Markdown) CanonicalPath(base string) (string, error) {
+	return filepath.Rel(base, strings.TrimSuffix(m.path, ".md.tmpl")+".html")
 }

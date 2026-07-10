@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 )
 
 type Raw struct {
@@ -26,4 +27,8 @@ func (r *Raw) Render(w io.Writer) error {
 	}
 
 	return nil
+}
+
+func (r *Raw) CanonicalPath(base string) (string, error) {
+	return filepath.Rel(base, r.path)
 }

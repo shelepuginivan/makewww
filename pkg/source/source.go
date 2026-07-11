@@ -11,6 +11,7 @@ import (
 )
 
 const (
+	contentDir   = "content"
 	templatesDir = "templates"
 )
 
@@ -27,14 +28,12 @@ func FromProjectRoot(root string) (*Source, error) {
 	return &Source{root: r}, nil
 }
 
-func (src *Source) ContentDir() string {
-	return filepath.Join(src.root.Name(), "content")
-}
-
 func (src *Source) Documents() ([]Document, error) {
 	var docs []Document
 
-	err := filepath.Walk(src.ContentDir(), func(sourceFile string, info fs.FileInfo, err error) error {
+	content := filepath.Join(src.root.Name(), contentDir)
+
+	err := filepath.Walk(content, func(sourceFile string, info fs.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -43,7 +42,7 @@ func (src *Source) Documents() ([]Document, error) {
 			return nil
 		}
 
-		path, err := filepath.Rel(src.ContentDir(), sourceFile)
+		path, err := filepath.Rel(content, sourceFile)
 		if err != nil {
 			return err
 		}
@@ -79,7 +78,9 @@ func (src *Source) Documents() ([]Document, error) {
 func (src *Source) RawFiles() ([]*Raw, error) {
 	var files []*Raw
 
-	err := filepath.Walk(src.ContentDir(), func(sourceFile string, info fs.FileInfo, err error) error {
+	content := filepath.Join(src.root.Name(), contentDir)
+
+	err := filepath.Walk(content, func(sourceFile string, info fs.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -92,7 +93,7 @@ func (src *Source) RawFiles() ([]*Raw, error) {
 			return nil
 		}
 
-		path, err := filepath.Rel(src.ContentDir(), sourceFile)
+		path, err := filepath.Rel(content, sourceFile)
 		if err != nil {
 			return err
 		}

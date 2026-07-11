@@ -1,8 +1,12 @@
 package builder
 
-import "github.com/shelepuginivan/makewww/pkg/source"
+import (
+	"github.com/shelepuginivan/makewww/pkg/config"
+	"github.com/shelepuginivan/makewww/pkg/source"
+)
 
 type GlobalContext struct {
+	Config    *config.Config
 	Documents []source.Document
 }
 
@@ -12,8 +16,14 @@ type DocumentContext struct {
 	Path     *source.Path
 }
 
+type TemplateDocumentContext struct {
+	Metadata *source.Metadata
+	Path     *source.Path
+}
+
 type TemplateContext struct {
-	Document *DocumentContext
+	Global   *GlobalContext
+	Document *TemplateDocumentContext
 	Content  string
 }
 
@@ -27,7 +37,11 @@ func newDocumentContext(doc source.Document, global *GlobalContext) *DocumentCon
 
 func newTemplateContext(content string, document *DocumentContext) *TemplateContext {
 	return &TemplateContext{
-		Document: document,
-		Content:  content,
+		Global: document.Global,
+		Document: &TemplateDocumentContext{
+			Metadata: document.Metadata,
+			Path:     document.Path,
+		},
+		Content: content,
 	}
 }

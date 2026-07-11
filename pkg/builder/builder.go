@@ -15,9 +15,10 @@ import (
 )
 
 type Builder struct {
-	src    *source.Source
-	out    *Output
-	parser goldmark.Markdown
+	cfg *config.Config
+	src *source.Source
+	out *Output
+	md  goldmark.Markdown
 }
 
 func New(cfg *config.Config) (*Builder, error) {
@@ -31,12 +32,13 @@ func New(cfg *config.Config) (*Builder, error) {
 		return nil, fmt.Errorf("failed to create output: %w", err)
 	}
 
-	parser := markdownParserFromConfig(&cfg.Markdown)
+	md := markdownParserFromConfig(&cfg.Markdown)
 
 	return &Builder{
-		src:    src,
-		out:    out,
-		parser: parser,
+		cfg: cfg,
+		src: src,
+		out: out,
+		md:  md,
 	}, nil
 }
 
@@ -52,6 +54,7 @@ func (b *Builder) Build() error {
 	}
 
 	global := &GlobalContext{
+		Config:    b.cfg,
 		Documents: documents,
 	}
 
@@ -122,7 +125,7 @@ func (b *Builder) renderMarkdownDocument(doc *source.MarkdownDocument, global *G
 	}
 
 	html := new(bytes.Buffer)
-	if err := b.parser.Convert(markdown.Bytes(), html); err != nil {
+	if err := b.md.Convert(markdown.Bytes(), html); err != nil {
 		return err
 	}
 

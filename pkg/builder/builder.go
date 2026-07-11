@@ -67,8 +67,8 @@ func (b *Builder) renderDocument(doc source.Document, global *GlobalContext) err
 	var err error
 
 	switch document := doc.(type) {
-	case *source.HTMLDocument:
-		err = b.renderHTMLDocument(document, global)
+	case *source.TemplateDocument:
+		err = b.renderTemplateDocument(document, global)
 	case *source.MarkdownDocument:
 		err = b.renderMarkdownDocument(document, global)
 	}
@@ -76,7 +76,7 @@ func (b *Builder) renderDocument(doc source.Document, global *GlobalContext) err
 	return err
 }
 
-func (b *Builder) renderHTMLDocument(doc *source.HTMLDocument, global *GlobalContext) error {
+func (b *Builder) renderTemplateDocument(doc *source.TemplateDocument, global *GlobalContext) error {
 	content, err := doc.Content()
 	if err != nil {
 		return err

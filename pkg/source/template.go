@@ -6,23 +6,23 @@ import (
 	"strings"
 )
 
-type HTMLDocument struct {
+type TemplateDocument struct {
 	path       string
 	sourceFile string
 }
 
-func htmlFromPath(path, sourceFile string) (*HTMLDocument, error) {
-	return &HTMLDocument{
+func templateFromPath(path, sourceFile string) (*TemplateDocument, error) {
+	return &TemplateDocument{
 		path:       path,
 		sourceFile: sourceFile,
 	}, nil
 }
 
-func (doc *HTMLDocument) Metadata() *Metadata {
+func (doc *TemplateDocument) Metadata() *Metadata {
 	return &Metadata{}
 }
 
-func (doc *HTMLDocument) Content() (string, error) {
+func (doc *TemplateDocument) Content() (string, error) {
 	content, err := os.ReadFile(doc.sourceFile)
 	if err != nil {
 		return "", fmt.Errorf("failed to read %s: %w", doc.sourceFile, err)
@@ -30,6 +30,6 @@ func (doc *HTMLDocument) Content() (string, error) {
 	return string(content), nil
 }
 
-func (doc *HTMLDocument) Path() *Path {
+func (doc *TemplateDocument) Path() *Path {
 	return &Path{strings.TrimSuffix(doc.path, ".tmpl")}
 }

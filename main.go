@@ -13,7 +13,11 @@ func main() {
 		log.Fatal(err)
 	}
 
-	builder := builder.New(cfg)
+	builder, err := builder.New(cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	if err := builder.Build(); err != nil {
 		log.Fatal(err)
 	}

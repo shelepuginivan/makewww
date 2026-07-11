@@ -54,10 +54,10 @@ func (src *Source) Documents() ([]Document, error) {
 		var doc Document
 
 		switch {
-		case strings.HasSuffix(sourceFile, ".html.tmpl"):
-			doc, err = htmlFromPath(path, sourceFile)
 		case strings.HasSuffix(sourceFile, ".md.tmpl"):
 			doc, err = markdownFromPath(path, sourceFile)
+		case strings.HasSuffix(sourceFile, ".tmpl"):
+			doc, err = templateFromPath(path, sourceFile)
 		default:
 			return nil
 		}

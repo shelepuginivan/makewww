@@ -2,6 +2,7 @@ package builder
 
 import (
 	"fmt"
+	"text/template"
 
 	"github.com/shelepuginivan/makewww/pkg/config"
 	"github.com/shelepuginivan/makewww/pkg/dist"
@@ -67,7 +68,28 @@ func (b *Builder) renderDocument(doc source.Document) error {
 }
 
 func (b *Builder) renderHTMLDocument(doc *source.HTMLDocument) error {
-	return nil
+	content, err := doc.Content()
+	if err != nil {
+		return err
+	}
+
+	path, err := doc.CanonicalPath(b.src.ContentDir())
+	if err != nil {
+		return err
+	}
+
+	tmpl, err := template.New("page").Parse(content)
+	if err != nil {
+		return err
+	}
+
+	file, err := b.dist.CreateOutputFile(path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	return tmpl.Execute(file, struct{}{})
 }
 
 func (b *Builder) renderMarkdownDocument(doc *source.MarkdownDocument) error {

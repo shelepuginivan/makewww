@@ -66,6 +66,34 @@ func (src *Source) Documents() iter.Seq2[Document, error] {
 	}
 }
 
+func (src *Source) RawFiles() iter.Seq2[*Raw, error] {
+	return func(yield func(*Raw, error) bool) {
+		filepath.Walk(src.ContentDir(), func(path string, info fs.FileInfo, err error) error {
+			if err != nil {
+				if !yield(nil, err) {
+					return fs.SkipAll
+				}
+				return nil
+			}
+
+			if info.IsDir() {
+				return nil
+			}
+
+			if strings.HasSuffix(path, ".tmpl") {
+				return nil
+			}
+
+			raw := rawFromPath(path)
+			if !yield(raw, nil) {
+				return fs.SkipAll
+			}
+
+			return nil
+		})
+	}
+}
+
 func (src *Source) GetTemplate(path string) (*template.Template, error) {
 	if !filepath.IsAbs(path) {
 		return nil, fmt.Errorf("template path must be absolute")

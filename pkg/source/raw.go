@@ -11,7 +11,7 @@ type Raw struct {
 	path string
 }
 
-func RawFromPath(path string) *Raw {
+func rawFromPath(path string) *Raw {
 	return &Raw{path: path}
 }
 

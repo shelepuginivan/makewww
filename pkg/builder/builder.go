@@ -17,8 +17,12 @@ type Builder struct {
 	parser goldmark.Markdown
 }
 
-func New(cfg *config.Config) *Builder {
-	src := source.FromProjectRoot(cfg.Dir)
+func New(cfg *config.Config) (*Builder, error) {
+	src, err := source.FromProjectRoot(cfg.Dir)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get source: %w", err)
+	}
+
 	dist := dist.FromRoot(cfg.Output)
 	parser := goldmark.New()
 
@@ -26,7 +30,7 @@ func New(cfg *config.Config) *Builder {
 		src:    src,
 		dist:   dist,
 		parser: parser,
-	}
+	}, nil
 }
 
 func (b *Builder) Build() error {
@@ -40,8 +44,12 @@ func (b *Builder) Build() error {
 		return fmt.Errorf("failed to get raw files: %w", err)
 	}
 
+	global := &GlobalContext{
+		Documents: documents,
+	}
+
 	for _, doc := range documents {
-		if err := b.renderDocument(doc); err != nil {
+		if err := b.renderDocument(doc, global); err != nil {
 			return fmt.Errorf("failed to render: %w", err)
 		}
 	}
@@ -55,26 +63,21 @@ func (b *Builder) Build() error {
 	return nil
 }
 
-func (b *Builder) renderDocument(doc source.Document) error {
+func (b *Builder) renderDocument(doc source.Document, global *GlobalContext) error {
 	var err error
 
 	switch document := doc.(type) {
 	case *source.HTMLDocument:
-		err = b.renderHTMLDocument(document)
+		err = b.renderHTMLDocument(document, global)
 	case *source.MarkdownDocument:
-		err = b.renderMarkdownDocument(document)
+		err = b.renderMarkdownDocument(document, global)
 	}
 
 	return err
 }
 
-func (b *Builder) renderHTMLDocument(doc *source.HTMLDocument) error {
+func (b *Builder) renderHTMLDocument(doc *source.HTMLDocument, global *GlobalContext) error {
 	content, err := doc.Content()
-	if err != nil {
-		return err
-	}
-
-	path, err := doc.CanonicalPath(b.src.ContentDir())
 	if err != nil {
 		return err
 	}
@@ -84,22 +87,17 @@ func (b *Builder) renderHTMLDocument(doc *source.HTMLDocument) error {
 		return err
 	}
 
-	file, err := b.dist.CreateOutputFile(path)
+	file, err := b.dist.CreateOutputFile(doc.Path().Relative())
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 
-	return tmpl.Execute(file, struct{}{})
+	return tmpl.Execute(file, newDocumentContext(doc, global))
 }
 
-func (b *Builder) renderMarkdownDocument(doc *source.MarkdownDocument) error {
+func (b *Builder) renderMarkdownDocument(doc *source.MarkdownDocument, global *GlobalContext) error {
 	content, err := doc.Content()
-	if err != nil {
-		return err
-	}
-
-	dest, err := doc.CanonicalPath(b.src.ContentDir())
 	if err != nil {
 		return err
 	}
@@ -109,8 +107,10 @@ func (b *Builder) renderMarkdownDocument(doc *source.MarkdownDocument) error {
 		return err
 	}
 
+	documentCtx := newDocumentContext(doc, global)
+
 	var sb strings.Builder
-	if err := tmpl.Execute(&sb, struct{}{}); err != nil {
+	if err := tmpl.Execute(&sb, documentCtx); err != nil {
 		return err
 	}
 
@@ -119,13 +119,13 @@ func (b *Builder) renderMarkdownDocument(doc *source.MarkdownDocument) error {
 		return err
 	}
 
-	f, err := b.dist.CreateOutputFile(dest)
+	f, err := b.dist.CreateOutputFile(doc.Path().Relative())
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
-	return tmpl.Execute(f, struct{}{})
+	return tmpl.Execute(f, newTemplateContext(sb.String(), documentCtx))
 }
 
 func (b *Builder) copyRawFile(raw *source.Raw) error {

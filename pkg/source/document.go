@@ -12,6 +12,6 @@ type Metadata struct {
 
 type Document interface {
 	Metadata() *Metadata
-	Content() string
+	Content() (string, error)
 	CanonicalPath(base string) (string, error)
 }

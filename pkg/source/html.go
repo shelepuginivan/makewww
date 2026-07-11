@@ -8,19 +8,12 @@ import (
 )
 
 type HTMLDocument struct {
-	path    string
-	content string
+	path string
 }
 
 func htmlFromPath(path string) (*HTMLDocument, error) {
-	content, err := os.ReadFile(path)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read %s: %w", path, err)
-	}
-
 	return &HTMLDocument{
-		path:    path,
-		content: string(content),
+		path: path,
 	}, nil
 }
 
@@ -28,8 +21,12 @@ func (doc *HTMLDocument) Metadata() *Metadata {
 	return nil
 }
 
-func (doc *HTMLDocument) Content() string {
-	return doc.content
+func (doc *HTMLDocument) Content() (string, error) {
+	content, err := os.ReadFile(doc.path)
+	if err != nil {
+		return "", fmt.Errorf("failed to read %s: %w", doc.path, err)
+	}
+	return string(content), nil
 }
 
 func (doc *HTMLDocument) CanonicalPath(base string) (string, error) {

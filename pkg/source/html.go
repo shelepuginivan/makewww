@@ -3,32 +3,33 @@ package source
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 )
 
 type HTMLDocument struct {
-	path string
+	path       string
+	sourceFile string
 }
 
-func htmlFromPath(path string) (*HTMLDocument, error) {
+func htmlFromPath(path, sourceFile string) (*HTMLDocument, error) {
 	return &HTMLDocument{
-		path: path,
+		path:       path,
+		sourceFile: sourceFile,
 	}, nil
 }
 
 func (doc *HTMLDocument) Metadata() *Metadata {
-	return nil
+	return &Metadata{}
 }
 
 func (doc *HTMLDocument) Content() (string, error) {
-	content, err := os.ReadFile(doc.path)
+	content, err := os.ReadFile(doc.sourceFile)
 	if err != nil {
-		return "", fmt.Errorf("failed to read %s: %w", doc.path, err)
+		return "", fmt.Errorf("failed to read %s: %w", doc.sourceFile, err)
 	}
 	return string(content), nil
 }
 
-func (doc *HTMLDocument) CanonicalPath(base string) (string, error) {
-	return filepath.Rel(base, strings.TrimSuffix(doc.path, ".tmpl"))
+func (doc *HTMLDocument) Path() string {
+	return strings.TrimSuffix(doc.path, ".tmpl")
 }

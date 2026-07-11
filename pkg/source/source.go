@@ -3,31 +3,41 @@ package source
 import (
 	"fmt"
 	"io/fs"
+	"os"
 	"path/filepath"
 	"strings"
 	"text/template"
 )
 
+const (
+	templatesDir = "templates"
+)
+
 type Source struct {
-	root string
+	root *os.Root
 }
 
-func FromProjectRoot(root string) *Source {
-	return &Source{root: root}
+func FromProjectRoot(root string) (*Source, error) {
+	r, err := os.OpenRoot(root)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Source{root: r}, nil
 }
 
 func (src *Source) ContentDir() string {
-	return filepath.Join(src.root, "content")
+	return filepath.Join(src.root.Name(), "content")
 }
 
 func (src *Source) TemplatesDir() string {
-	return filepath.Join(src.root, "templates")
+	return filepath.Join(src.root.Name(), "templates")
 }
 
 func (src *Source) Documents() ([]Document, error) {
 	var docs []Document
 
-	err := filepath.Walk(src.ContentDir(), func(path string, info fs.FileInfo, err error) error {
+	err := filepath.Walk(src.ContentDir(), func(sourceFile string, info fs.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -36,13 +46,18 @@ func (src *Source) Documents() ([]Document, error) {
 			return nil
 		}
 
+		path, err := filepath.Rel(src.ContentDir(), sourceFile)
+		if err != nil {
+			return err
+		}
+
 		var doc Document
 
 		switch {
-		case strings.HasSuffix(path, ".html.tmpl"):
-			doc, err = htmlFromPath(path)
-		case strings.HasSuffix(path, ".md.tmpl"):
-			doc, err = markdownFromPath(path)
+		case strings.HasSuffix(sourceFile, ".html.tmpl"):
+			doc, err = htmlFromPath(path, sourceFile)
+		case strings.HasSuffix(sourceFile, ".md.tmpl"):
+			doc, err = markdownFromPath(path, sourceFile)
 		default:
 			return nil
 		}
@@ -70,6 +85,8 @@ func (src *Source) RawFiles() ([]*Raw, error) {
 			return err
 		}
 
+		fmt.Println(filepath.Rel(src.ContentDir(), path))
+
 		if info.IsDir() {
 			return nil
 		}
@@ -90,10 +107,15 @@ func (src *Source) RawFiles() ([]*Raw, error) {
 }
 
 func (src *Source) GetTemplate(path string) (*template.Template, error) {
-	tmplPath := filepath.Join(src.TemplatesDir(), path)
-	tmpl, err := template.ParseFiles(tmplPath)
+	tmplPath := filepath.Join(templatesDir, path)
+	content, err := src.root.ReadFile(tmplPath)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get template: %w", err)
+		return nil, fmt.Errorf("failed to read template: %w", err)
+	}
+
+	tmpl, err := template.New("template").Parse(string(content))
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse template: %w", err)
 	}
 
 	return tmpl, nil

@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/goccy/go-yaml"
@@ -14,14 +13,15 @@ import (
 var frontmatterDelimiter = "---"
 
 type MarkdownDocument struct {
-	path     string
-	metadata *Metadata
+	path       string
+	sourceFile string
+	metadata   *Metadata
 }
 
-func markdownFromPath(path string) (*MarkdownDocument, error) {
-	file, err := os.Open(path)
+func markdownFromPath(path, sourceFile string) (*MarkdownDocument, error) {
+	file, err := os.Open(sourceFile)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open %s: %w", path, err)
+		return nil, fmt.Errorf("failed to open %s: %w", sourceFile, err)
 	}
 
 	buffer := bytes.NewBuffer(nil)
@@ -46,8 +46,9 @@ func markdownFromPath(path string) (*MarkdownDocument, error) {
 	}
 
 	return &MarkdownDocument{
-		path:     path,
-		metadata: &metadata,
+		path:       path,
+		sourceFile: sourceFile,
+		metadata:   &metadata,
 	}, nil
 }
 
@@ -56,9 +57,9 @@ func (doc *MarkdownDocument) Metadata() *Metadata {
 }
 
 func (doc *MarkdownDocument) Content() (string, error) {
-	content, err := os.ReadFile(doc.path)
+	content, err := os.ReadFile(doc.sourceFile)
 	if err != nil {
-		return "", fmt.Errorf("failed to read %s: %w", doc.path, err)
+		return "", fmt.Errorf("failed to read %s: %w", doc.sourceFile, err)
 	}
 
 	_, text, ok := bytes.Cut(content, []byte("\n---\n"))
@@ -69,6 +70,6 @@ func (doc *MarkdownDocument) Content() (string, error) {
 	return string(text), nil
 }
 
-func (doc *MarkdownDocument) CanonicalPath(base string) (string, error) {
-	return filepath.Rel(base, strings.TrimSuffix(doc.path, ".md.tmpl")+".html")
+func (doc *MarkdownDocument) Path() string {
+	return strings.TrimSuffix(doc.path, ".md.tmpl") + ".html"
 }

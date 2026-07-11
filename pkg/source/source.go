@@ -31,10 +31,6 @@ func (src *Source) ContentDir() string {
 	return filepath.Join(src.root.Name(), "content")
 }
 
-func (src *Source) TemplatesDir() string {
-	return filepath.Join(src.root.Name(), "templates")
-}
-
 func (src *Source) Documents() ([]Document, error) {
 	var docs []Document
 
@@ -81,22 +77,25 @@ func (src *Source) Documents() ([]Document, error) {
 func (src *Source) RawFiles() ([]*Raw, error) {
 	var files []*Raw
 
-	err := filepath.Walk(src.ContentDir(), func(path string, info fs.FileInfo, err error) error {
+	err := filepath.Walk(src.ContentDir(), func(sourceFile string, info fs.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
-
-		fmt.Println(filepath.Rel(src.ContentDir(), path))
 
 		if info.IsDir() {
 			return nil
 		}
 
-		if strings.HasSuffix(path, ".tmpl") {
+		if strings.HasSuffix(sourceFile, ".tmpl") {
 			return nil
 		}
 
-		raw := rawFromPath(path)
+		path, err := filepath.Rel(src.ContentDir(), sourceFile)
+		if err != nil {
+			return err
+		}
+
+		raw := rawFromPath(path, sourceFile)
 		files = append(files, raw)
 		return nil
 	})

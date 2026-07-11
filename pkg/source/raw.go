@@ -4,19 +4,22 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
 )
 
 type Raw struct {
-	path string
+	path       string
+	sourceFile string
 }
 
-func rawFromPath(path string) *Raw {
-	return &Raw{path: path}
+func rawFromPath(path, sourceFile string) *Raw {
+	return &Raw{
+		path:       path,
+		sourceFile: sourceFile,
+	}
 }
 
-func (r *Raw) Render(w io.Writer) error {
-	file, err := os.Open(r.path)
+func (r *Raw) CopyTo(w io.Writer) error {
+	file, err := os.Open(r.sourceFile)
 	if err != nil {
 		return fmt.Errorf("failed to open raw document: %w", err)
 	}
@@ -29,6 +32,6 @@ func (r *Raw) Render(w io.Writer) error {
 	return nil
 }
 
-func (r *Raw) CanonicalPath(base string) (string, error) {
-	return filepath.Rel(base, r.path)
+func (r *Raw) Path() *Path {
+	return &Path{r.path}
 }

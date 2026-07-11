@@ -145,18 +145,13 @@ func (b *Builder) renderMarkdownDocument(doc *source.MarkdownDocument, global *G
 }
 
 func (b *Builder) copyRawFile(raw *source.Raw) error {
-	dest, err := raw.CanonicalPath(b.src.ContentDir())
-	if err != nil {
-		return err
-	}
-
-	f, err := b.out.CreateOutputFile(dest)
+	f, err := b.out.CreateOutputFile(raw.Path().Relative())
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
-	if err := raw.Render(f); err != nil {
+	if err := raw.CopyTo(f); err != nil {
 		return err
 	}
 

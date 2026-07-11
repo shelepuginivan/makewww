@@ -90,10 +90,6 @@ func (src *Source) RawFiles() ([]*Raw, error) {
 }
 
 func (src *Source) GetTemplate(path string) (*template.Template, error) {
-	if !filepath.IsAbs(path) {
-		return nil, fmt.Errorf("template path must be absolute")
-	}
-
 	tmplPath := filepath.Join(src.TemplatesDir(), path)
 	tmpl, err := template.ParseFiles(tmplPath)
 	if err != nil {

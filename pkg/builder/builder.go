@@ -6,14 +6,13 @@ import (
 	"text/template"
 
 	"github.com/shelepuginivan/makewww/pkg/config"
-	"github.com/shelepuginivan/makewww/pkg/dist"
 	"github.com/shelepuginivan/makewww/pkg/source"
 	"github.com/yuin/goldmark"
 )
 
 type Builder struct {
 	src    *source.Source
-	dist   *dist.Dist
+	out    *Output
 	parser goldmark.Markdown
 }
 
@@ -23,12 +22,16 @@ func New(cfg *config.Config) (*Builder, error) {
 		return nil, fmt.Errorf("failed to get source: %w", err)
 	}
 
-	dist := dist.FromRoot(cfg.Output)
+	out, err := outputFromRoot(cfg.Output)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create output: %w", err)
+	}
+
 	parser := goldmark.New()
 
 	return &Builder{
 		src:    src,
-		dist:   dist,
+		out:    out,
 		parser: parser,
 	}, nil
 }
@@ -87,7 +90,7 @@ func (b *Builder) renderTemplateDocument(doc *source.TemplateDocument, global *G
 		return err
 	}
 
-	file, err := b.dist.CreateOutputFile(doc.Path().Relative())
+	file, err := b.out.CreateOutputFile(doc.Path().Relative())
 	if err != nil {
 		return err
 	}
@@ -124,7 +127,7 @@ func (b *Builder) renderMarkdownDocument(doc *source.MarkdownDocument, global *G
 		return err
 	}
 
-	f, err := b.dist.CreateOutputFile(doc.Path().Relative())
+	f, err := b.out.CreateOutputFile(doc.Path().Relative())
 	if err != nil {
 		return err
 	}
@@ -139,7 +142,7 @@ func (b *Builder) copyRawFile(raw *source.Raw) error {
 		return err
 	}
 
-	f, err := b.dist.CreateOutputFile(dest)
+	f, err := b.out.CreateOutputFile(dest)
 	if err != nil {
 		return err
 	}

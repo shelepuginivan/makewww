@@ -35,6 +35,11 @@ func (p *Path) Normalized() string {
 	return strings.TrimSuffix(abs, ext)
 }
 
+func (p *Path) RelativeNormalized() string {
+	ext := filepath.Ext(p.relative)
+	return strings.TrimSuffix(p.relative, ext)
+}
+
 func (p *Path) Stem() string {
 	base := p.Base()
 	ext := filepath.Ext(base)

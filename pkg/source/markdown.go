@@ -70,6 +70,6 @@ func (doc *MarkdownDocument) Content() (string, error) {
 	return string(text), nil
 }
 
-func (doc *MarkdownDocument) Path() string {
-	return strings.TrimSuffix(doc.path, ".md.tmpl") + ".html"
+func (doc *MarkdownDocument) Path() *Path {
+	return &Path{strings.TrimSuffix(doc.path, ".md.tmpl") + ".html"}
 }

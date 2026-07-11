@@ -30,6 +30,6 @@ func (doc *HTMLDocument) Content() (string, error) {
 	return string(content), nil
 }
 
-func (doc *HTMLDocument) Path() string {
-	return strings.TrimSuffix(doc.path, ".tmpl")
+func (doc *HTMLDocument) Path() *Path {
+	return &Path{strings.TrimSuffix(doc.path, ".tmpl")}
 }

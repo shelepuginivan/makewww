@@ -4,6 +4,7 @@ package builder
 import (
 	"bytes"
 	"fmt"
+	"path/filepath"
 	"text/template"
 
 	"github.com/shelepuginivan/makewww/pkg/config"
@@ -78,16 +79,18 @@ func (b *Builder) renderDocument(doc source.Document, global *GlobalContext) err
 	var err error
 
 	switch document := doc.(type) {
-	case *source.TemplateDocument:
-		err = b.renderTemplateDocument(document, global)
+	case *source.HTMLDocument:
+		err = b.renderHTMLDocument(document, global)
 	case *source.MarkdownDocument:
 		err = b.renderMarkdownDocument(document, global)
+	case *source.TemplateDocument:
+		err = b.renderTemplateDocument(document, global)
 	}
 
 	return err
 }
 
-func (b *Builder) renderTemplateDocument(doc *source.TemplateDocument, global *GlobalContext) error {
+func (b *Builder) renderHTMLDocument(doc *source.HTMLDocument, global *GlobalContext) error {
 	content, err := doc.Content()
 	if err != nil {
 		return err
@@ -98,7 +101,7 @@ func (b *Builder) renderTemplateDocument(doc *source.TemplateDocument, global *G
 		return err
 	}
 
-	file, err := b.out.CreateOutputFile(doc.Path().Relative())
+	file, err := b.out.CreateOutputFile(b.outputPath(doc.Path()))
 	if err != nil {
 		return err
 	}
@@ -135,13 +138,33 @@ func (b *Builder) renderMarkdownDocument(doc *source.MarkdownDocument, global *G
 		return err
 	}
 
-	f, err := b.out.CreateOutputFile(doc.Path().Relative())
+	f, err := b.out.CreateOutputFile(b.outputPath(doc.Path()))
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
 	return tmpl.Execute(f, newTemplateContext(html.String(), documentCtx))
+}
+
+func (b *Builder) renderTemplateDocument(doc *source.TemplateDocument, global *GlobalContext) error {
+	content, err := doc.Content()
+	if err != nil {
+		return err
+	}
+
+	tmpl, err := template.New("page").Parse(content)
+	if err != nil {
+		return err
+	}
+
+	file, err := b.out.CreateOutputFile(doc.Path().Relative())
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	return tmpl.Execute(file, newDocumentContext(doc, global))
 }
 
 func (b *Builder) copyRawFile(raw *source.Raw) error {
@@ -156,6 +179,14 @@ func (b *Builder) copyRawFile(raw *source.Raw) error {
 	}
 
 	return nil
+}
+
+func (b *Builder) outputPath(path *source.Path) string {
+	if b.cfg.TransformDirs {
+		return filepath.Join(path.RelativeNormalized(), "index.html")
+	} else {
+		return path.Relative()
+	}
 }
 
 func markdownParserFromConfig(cfg *config.Markdown) goldmark.Markdown {

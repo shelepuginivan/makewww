@@ -3,6 +3,7 @@ package source
 import (
 	"fmt"
 	"io/fs"
+	"iter"
 	"path/filepath"
 	"strings"
 	"text/template"
@@ -24,41 +25,45 @@ func (src *Source) TemplatesDir() string {
 	return filepath.Join(src.root, "templates")
 }
 
-func (src *Source) GetDocuments() ([]Document, error) {
-	var documents []Document
+func (src *Source) Documents() iter.Seq2[Document, error] {
+	return func(yield func(Document, error) bool) {
+		filepath.Walk(src.ContentDir(), func(path string, info fs.FileInfo, err error) error {
+			if err != nil {
+				if !yield(nil, err) {
+					return fs.SkipAll
+				}
+				return nil
+			}
 
-	err := filepath.Walk(src.ContentDir(), func(path string, info fs.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
+			if info.IsDir() {
+				return nil
+			}
 
-		if info.IsDir() {
+			var doc Document
+
+			switch {
+			case strings.HasSuffix(path, ".html.tmpl"):
+				doc, err = htmlFromPath(path)
+			case strings.HasSuffix(path, ".md.tmpl"):
+				doc, err = markdownFromPath(path)
+			default:
+				return nil
+			}
+
+			if err != nil {
+				if !yield(nil, err) {
+					return fs.SkipAll
+				}
+				return nil
+			}
+
+			if !yield(doc, nil) {
+				return fs.SkipAll
+			}
+
 			return nil
-		}
-
-		var d Document
-
-		switch {
-		case strings.HasSuffix(path, ".html.tmpl"):
-			d, err = htmlFromPath(path)
-		case strings.HasSuffix(path, ".md.tmpl"):
-			d, err = markdownFromPath(path)
-		default:
-			return nil
-		}
-
-		if err != nil {
-			return err
-		}
-
-		documents = append(documents, d)
-		return nil
-	})
-	if err != nil {
-		return nil, fmt.Errorf("failed to get documents: %w", err)
+		})
 	}
-
-	return documents, nil
 }
 
 func (src *Source) GetTemplate(path string) (*template.Template, error) {

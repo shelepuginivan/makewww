@@ -1,6 +1,9 @@
 package source
 
-import "path/filepath"
+import (
+	"path/filepath"
+	"strings"
+)
 
 type Path struct {
 	relative string
@@ -24,4 +27,16 @@ func (p *Path) Base() string {
 
 func (p *Path) Dir() string {
 	return filepath.Dir(p.Absolute())
+}
+
+func (p *Path) Normalized() string {
+	abs := p.Absolute()
+	ext := filepath.Ext(abs)
+	return strings.TrimSuffix(abs, ext)
+}
+
+func (p *Path) Stem() string {
+	base := p.Base()
+	ext := filepath.Ext(base)
+	return strings.TrimSuffix(base, ext)
 }

@@ -1,8 +1,8 @@
 package builder
 
 import (
+	"bytes"
 	"fmt"
-	"strings"
 	"text/template"
 
 	"github.com/shelepuginivan/makewww/pkg/config"
@@ -109,8 +109,13 @@ func (b *Builder) renderMarkdownDocument(doc *source.MarkdownDocument, global *G
 
 	documentCtx := newDocumentContext(doc, global)
 
-	var sb strings.Builder
-	if err := tmpl.Execute(&sb, documentCtx); err != nil {
+	markdown := new(bytes.Buffer)
+	if err := tmpl.Execute(markdown, documentCtx); err != nil {
+		return err
+	}
+
+	html := new(bytes.Buffer)
+	if err := b.parser.Convert(markdown.Bytes(), html); err != nil {
 		return err
 	}
 
@@ -125,7 +130,7 @@ func (b *Builder) renderMarkdownDocument(doc *source.MarkdownDocument, global *G
 	}
 	defer f.Close()
 
-	return tmpl.Execute(f, newTemplateContext(sb.String(), documentCtx))
+	return tmpl.Execute(f, newTemplateContext(html.String(), documentCtx))
 }
 
 func (b *Builder) copyRawFile(raw *source.Raw) error {

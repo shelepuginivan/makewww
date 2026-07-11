@@ -1,3 +1,4 @@
+// Package builder provides [Builder] struct that builds the website.
 package builder
 
 import (

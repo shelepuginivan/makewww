@@ -1,3 +1,4 @@
+// Package config provides makewww configuration.
 package config
 
 import (

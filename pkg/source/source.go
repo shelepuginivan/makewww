@@ -1,3 +1,4 @@
+// Package source provides methods for working with website source code.
 package source
 
 import (

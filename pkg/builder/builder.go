@@ -8,6 +8,10 @@ import (
 	"github.com/shelepuginivan/makewww/pkg/config"
 	"github.com/shelepuginivan/makewww/pkg/source"
 	"github.com/yuin/goldmark"
+	"github.com/yuin/goldmark/extension"
+	"github.com/yuin/goldmark/parser"
+	"github.com/yuin/goldmark/renderer"
+	"github.com/yuin/goldmark/renderer/html"
 )
 
 type Builder struct {
@@ -27,7 +31,7 @@ func New(cfg *config.Config) (*Builder, error) {
 		return nil, fmt.Errorf("failed to create output: %w", err)
 	}
 
-	parser := goldmark.New()
+	parser := markdownParserFromConfig(&cfg.Markdown)
 
 	return &Builder{
 		src:    src,
@@ -153,4 +157,40 @@ func (b *Builder) copyRawFile(raw *source.Raw) error {
 	}
 
 	return nil
+}
+
+func markdownParserFromConfig(cfg *config.Markdown) goldmark.Markdown {
+	var extensions []goldmark.Extender
+	var parserOpts []parser.Option
+	var renderOpts []renderer.Option
+
+	if cfg.Extensions.Definitions {
+		extensions = append(extensions, extension.DefinitionList)
+	}
+	if cfg.Extensions.Footnotes {
+		extensions = append(extensions, extension.Footnote)
+	}
+	if cfg.Extensions.GFM {
+		extensions = append(extensions, extension.GFM)
+	}
+
+	if cfg.Parser.Attributes {
+		parserOpts = append(parserOpts, parser.WithAttribute())
+	}
+	if cfg.Parser.AutoHeadingID {
+		parserOpts = append(parserOpts, parser.WithAutoHeadingID())
+	}
+
+	if cfg.Render.HardWraps {
+		renderOpts = append(renderOpts, html.WithHardWraps())
+	}
+	if cfg.Render.Unsafe {
+		renderOpts = append(renderOpts, html.WithUnsafe())
+	}
+
+	return goldmark.New(
+		goldmark.WithExtensions(extensions...),
+		goldmark.WithParserOptions(parserOpts...),
+		goldmark.WithRendererOptions(renderOpts...),
+	)
 }

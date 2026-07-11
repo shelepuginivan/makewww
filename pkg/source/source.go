@@ -3,7 +3,6 @@ package source
 import (
 	"fmt"
 	"io/fs"
-	"iter"
 	"path/filepath"
 	"strings"
 	"text/template"
@@ -25,73 +24,69 @@ func (src *Source) TemplatesDir() string {
 	return filepath.Join(src.root, "templates")
 }
 
-func (src *Source) Documents() iter.Seq2[Document, error] {
-	return func(yield func(Document, error) bool) {
-		filepath.Walk(src.ContentDir(), func(path string, info fs.FileInfo, err error) error {
-			if err != nil {
-				if !yield(nil, err) {
-					return fs.SkipAll
-				}
-				return nil
-			}
+func (src *Source) Documents() ([]Document, error) {
+	var docs []Document
 
-			if info.IsDir() {
-				return nil
-			}
+	err := filepath.Walk(src.ContentDir(), func(path string, info fs.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
 
-			var doc Document
-
-			switch {
-			case strings.HasSuffix(path, ".html.tmpl"):
-				doc, err = htmlFromPath(path)
-			case strings.HasSuffix(path, ".md.tmpl"):
-				doc, err = markdownFromPath(path)
-			default:
-				return nil
-			}
-
-			if err != nil {
-				if !yield(nil, err) {
-					return fs.SkipAll
-				}
-				return nil
-			}
-
-			if !yield(doc, nil) {
-				return fs.SkipAll
-			}
-
+		if info.IsDir() {
 			return nil
-		})
+		}
+
+		var doc Document
+
+		switch {
+		case strings.HasSuffix(path, ".html.tmpl"):
+			doc, err = htmlFromPath(path)
+		case strings.HasSuffix(path, ".md.tmpl"):
+			doc, err = markdownFromPath(path)
+		default:
+			return nil
+		}
+
+		if err != nil {
+			return err
+		}
+
+		docs = append(docs, doc)
+
+		return nil
+	})
+	if err != nil {
+		return nil, err
 	}
+
+	return docs, nil
 }
 
-func (src *Source) RawFiles() iter.Seq2[*Raw, error] {
-	return func(yield func(*Raw, error) bool) {
-		filepath.Walk(src.ContentDir(), func(path string, info fs.FileInfo, err error) error {
-			if err != nil {
-				if !yield(nil, err) {
-					return fs.SkipAll
-				}
-				return nil
-			}
+func (src *Source) RawFiles() ([]*Raw, error) {
+	var files []*Raw
 
-			if info.IsDir() {
-				return nil
-			}
+	err := filepath.Walk(src.ContentDir(), func(path string, info fs.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
 
-			if strings.HasSuffix(path, ".tmpl") {
-				return nil
-			}
-
-			raw := rawFromPath(path)
-			if !yield(raw, nil) {
-				return fs.SkipAll
-			}
-
+		if info.IsDir() {
 			return nil
-		})
+		}
+
+		if strings.HasSuffix(path, ".tmpl") {
+			return nil
+		}
+
+		raw := rawFromPath(path)
+		files = append(files, raw)
+		return nil
+	})
+	if err != nil {
+		return nil, err
 	}
+
+	return files, nil
 }
 
 func (src *Source) GetTemplate(path string) (*template.Template, error) {

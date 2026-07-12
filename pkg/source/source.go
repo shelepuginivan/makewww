@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"text/template"
 )
@@ -82,6 +83,7 @@ func (src *Source) Documents() ([]Document, error) {
 func (src *Source) RawFiles() ([]*Raw, error) {
 	var files []*Raw
 
+	skipExt := []string{".md", ".html", ".tmpl"}
 	content := filepath.Join(src.root.Name(), contentDir)
 
 	err := filepath.Walk(content, func(sourceFile string, info fs.FileInfo, err error) error {
@@ -93,7 +95,7 @@ func (src *Source) RawFiles() ([]*Raw, error) {
 			return nil
 		}
 
-		if strings.HasSuffix(sourceFile, ".tmpl") {
+		if slices.Contains(skipExt, filepath.Ext(sourceFile)) {
 			return nil
 		}
 

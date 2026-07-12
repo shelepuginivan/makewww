@@ -4,6 +4,7 @@ package builder
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"path/filepath"
 	"text/template"
 
@@ -91,40 +92,21 @@ func (b *Builder) renderDocument(doc source.Document, global *GlobalContext) err
 }
 
 func (b *Builder) renderHTMLDocument(doc *source.HTMLDocument, global *GlobalContext) error {
-	content, err := doc.Content()
-	if err != nil {
-		return err
-	}
-
-	tmpl, err := template.New("page").Parse(content)
-	if err != nil {
-		return err
-	}
-
 	file, err := b.out.CreateOutputFile(b.outputPath(doc.Path()))
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 
-	return tmpl.Execute(file, newDocumentContext(doc, global))
+	return b.execTemplateIfNeeded(file, doc, newDocumentContext(doc, global))
 }
 
 func (b *Builder) renderMarkdownDocument(doc *source.MarkdownDocument, global *GlobalContext) error {
-	content, err := doc.Content()
-	if err != nil {
-		return err
-	}
-
-	tmpl, err := template.New("page").Parse(content)
-	if err != nil {
-		return err
-	}
-
 	documentCtx := newDocumentContext(doc, global)
-
 	markdown := new(bytes.Buffer)
-	if err := tmpl.Execute(markdown, documentCtx); err != nil {
+
+	err := b.execTemplateIfNeeded(markdown, doc, documentCtx)
+	if err != nil {
 		return err
 	}
 
@@ -133,7 +115,7 @@ func (b *Builder) renderMarkdownDocument(doc *source.MarkdownDocument, global *G
 		return err
 	}
 
-	tmpl, err = b.src.GetTemplate(doc.Metadata().Template)
+	tmpl, err := b.src.GetTemplate(doc.Metadata().Template)
 	if err != nil {
 		return err
 	}
@@ -148,23 +130,13 @@ func (b *Builder) renderMarkdownDocument(doc *source.MarkdownDocument, global *G
 }
 
 func (b *Builder) renderTemplateDocument(doc *source.TemplateDocument, global *GlobalContext) error {
-	content, err := doc.Content()
-	if err != nil {
-		return err
-	}
-
-	tmpl, err := template.New("page").Parse(content)
-	if err != nil {
-		return err
-	}
-
 	file, err := b.out.CreateOutputFile(doc.Path().Relative())
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 
-	return tmpl.Execute(file, newDocumentContext(doc, global))
+	return b.execTemplateIfNeeded(file, doc, newDocumentContext(doc, global))
 }
 
 func (b *Builder) copyRawFile(raw *source.Raw) error {
@@ -187,6 +159,25 @@ func (b *Builder) outputPath(path *source.Path) string {
 	} else {
 		return path.Relative()
 	}
+}
+
+func (b *Builder) execTemplateIfNeeded(w io.Writer, doc source.Document, data any) error {
+	content, err := doc.Content()
+	if err != nil {
+		return err
+	}
+
+	if !doc.IsTemplate() {
+		_, err = fmt.Fprint(w, content)
+		return err
+	}
+
+	tmpl, err := template.New("page").Parse(content)
+	if err != nil {
+		return err
+	}
+
+	return tmpl.Execute(w, data)
 }
 
 func markdownParserFromConfig(cfg *config.Markdown) goldmark.Markdown {

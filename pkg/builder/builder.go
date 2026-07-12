@@ -154,7 +154,7 @@ func (b *Builder) copyRawFile(raw *source.Raw) error {
 }
 
 func (b *Builder) outputPath(path *source.Path) string {
-	if b.cfg.TransformDirs {
+	if b.cfg.TransformDirs && path.Stem() != "index" {
 		return filepath.Join(path.RelativeNormalized(), "index.html")
 	} else {
 		return path.Relative()

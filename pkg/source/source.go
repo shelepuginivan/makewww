@@ -9,6 +9,8 @@ import (
 	"slices"
 	"strings"
 	"text/template"
+
+	"github.com/shelepuginivan/makewww/pkg/tmplfn"
 )
 
 const (
@@ -128,7 +130,7 @@ func (src *Source) GetTemplate(path string) (string, error) {
 func (src *Source) GetComponents() (*template.Template, error) {
 	pattern := filepath.Join(src.root.Name(), componentsDir, "*.tmpl")
 	files, _ := filepath.Glob(pattern)
-	tmpl := template.New("components")
+	tmpl := template.New("components").Funcs(tmplfn.FuncMap)
 
 	if len(files) == 0 {
 		return tmpl, nil

@@ -32,8 +32,6 @@ func markdownFromPath(path, sourceFile string, isTemplate bool) (*MarkdownDocume
 		return nil, err
 	}
 
-	fmt.Println(metadata)
-
 	return &MarkdownDocument{
 		path:       path,
 		sourceFile: sourceFile,

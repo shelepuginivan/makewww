@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"path/filepath"
-	"text/template"
 
 	"github.com/shelepuginivan/makewww/pkg/config"
 	"github.com/shelepuginivan/makewww/pkg/source"
@@ -115,18 +114,33 @@ func (b *Builder) renderMarkdownDocument(doc *source.MarkdownDocument, global *G
 		return err
 	}
 
-	tmpl, err := b.src.GetTemplate(doc.Metadata().Template)
+	file, err := b.out.CreateOutputFile(b.outputPath(doc.Path()))
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	if doc.Metadata().Template == "" {
+		_, err = fmt.Fprint(file, html.String())
+		return err
+	}
+
+	tmpl, err := b.src.GetComponents()
 	if err != nil {
 		return err
 	}
 
-	f, err := b.out.CreateOutputFile(b.outputPath(doc.Path()))
+	templateContent, err := b.src.GetTemplate(doc.Metadata().Template)
 	if err != nil {
 		return err
 	}
-	defer f.Close()
 
-	return tmpl.Execute(f, newTemplateContext(html.String(), documentCtx))
+	tmpl, err = tmpl.Parse(templateContent)
+	if err != nil {
+		return err
+	}
+
+	return tmpl.Execute(file, newTemplateContext(html.String(), documentCtx))
 }
 
 func (b *Builder) renderTemplateDocument(doc *source.TemplateDocument, global *GlobalContext) error {
@@ -172,7 +186,12 @@ func (b *Builder) execTemplateIfNeeded(w io.Writer, doc source.Document, data an
 		return err
 	}
 
-	tmpl, err := template.New("page").Parse(content)
+	tmpl, err := b.src.GetComponents()
+	if err != nil {
+		return err
+	}
+
+	tmpl, err = tmpl.Parse(content)
 	if err != nil {
 		return err
 	}

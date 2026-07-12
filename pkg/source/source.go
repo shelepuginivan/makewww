@@ -12,8 +12,9 @@ import (
 )
 
 const (
-	contentDir   = "content"
-	templatesDir = "templates"
+	componentsDir = "components"
+	contentDir    = "content"
+	templatesDir  = "templates"
 )
 
 type Source struct {
@@ -115,17 +116,23 @@ func (src *Source) RawFiles() ([]*Raw, error) {
 	return files, nil
 }
 
-func (src *Source) GetTemplate(path string) (*template.Template, error) {
-	tmplPath := filepath.Join(templatesDir, path)
-	content, err := src.root.ReadFile(tmplPath)
+func (src *Source) GetTemplate(path string) (string, error) {
+	path = filepath.Join(templatesDir, path)
+	content, err := src.root.ReadFile(path)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read template: %w", err)
+		return "", fmt.Errorf("failed to read template: %w", err)
+	}
+	return string(content), nil
+}
+
+func (src *Source) GetComponents() (*template.Template, error) {
+	pattern := filepath.Join(src.root.Name(), componentsDir, "*.tmpl")
+	files, _ := filepath.Glob(pattern)
+	tmpl := template.New("components")
+
+	if len(files) == 0 {
+		return tmpl, nil
 	}
 
-	tmpl, err := template.New("template").Parse(string(content))
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse template: %w", err)
-	}
-
-	return tmpl, nil
+	return tmpl.ParseFiles(files...)
 }

@@ -15,10 +15,11 @@ var frontmatterDelimiter = "---"
 type MarkdownDocument struct {
 	path       string
 	sourceFile string
+	isTemplate bool
 	metadata   *Metadata
 }
 
-func markdownFromPath(path, sourceFile string) (*MarkdownDocument, error) {
+func markdownFromPath(path, sourceFile string, isTemplate bool) (*MarkdownDocument, error) {
 	file, err := os.Open(sourceFile)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open %s: %w", sourceFile, err)
@@ -48,6 +49,7 @@ func markdownFromPath(path, sourceFile string) (*MarkdownDocument, error) {
 	return &MarkdownDocument{
 		path:       path,
 		sourceFile: sourceFile,
+		isTemplate: isTemplate,
 		metadata:   &metadata,
 	}, nil
 }
@@ -71,5 +73,13 @@ func (doc *MarkdownDocument) Content() (string, error) {
 }
 
 func (doc *MarkdownDocument) Path() *Path {
-	return &Path{strings.TrimSuffix(doc.path, ".md.tmpl") + ".html"}
+	path := doc.path
+	if doc.isTemplate {
+		path = strings.TrimSuffix(doc.path, ".tmpl")
+	}
+	return &Path{strings.TrimSuffix(path, ".md") + ".html"}
+}
+
+func (doc *MarkdownDocument) IsTemplate() bool {
+	return doc.isTemplate
 }

@@ -18,7 +18,7 @@ func templateFromPath(path, sourceFile string) (*TemplateDocument, error) {
 	}, nil
 }
 
-func (doc *TemplateDocument) Metadata() *Metadata {
+func (*TemplateDocument) Metadata() *Metadata {
 	return &Metadata{}
 }
 
@@ -32,4 +32,8 @@ func (doc *TemplateDocument) Content() (string, error) {
 
 func (doc *TemplateDocument) Path() *Path {
 	return &Path{strings.TrimSuffix(doc.path, ".tmpl")}
+}
+
+func (*TemplateDocument) IsTemplate() bool {
+	return true
 }

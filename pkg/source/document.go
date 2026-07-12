@@ -14,4 +14,5 @@ type Document interface {
 	Metadata() *Metadata
 	Content() (string, error)
 	Path() *Path
+	IsTemplate() bool
 }

@@ -9,12 +9,14 @@ import (
 type HTMLDocument struct {
 	path       string
 	sourceFile string
+	isTemplate bool
 }
 
-func htmlFromPath(path, sourceFile string) (*HTMLDocument, error) {
+func htmlFromPath(path, sourceFile string, isTemplate bool) (*HTMLDocument, error) {
 	return &HTMLDocument{
 		path:       path,
 		sourceFile: sourceFile,
+		isTemplate: isTemplate,
 	}, nil
 }
 
@@ -31,5 +33,13 @@ func (doc *HTMLDocument) Content() (string, error) {
 }
 
 func (doc *HTMLDocument) Path() *Path {
-	return &Path{strings.TrimSuffix(doc.path, ".tmpl")}
+	path := doc.path
+	if doc.isTemplate {
+		path = strings.TrimSuffix(doc.path, ".tmpl")
+	}
+	return &Path{path}
+}
+
+func (doc *HTMLDocument) IsTemplate() bool {
+	return doc.isTemplate
 }

@@ -4,13 +4,14 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
 	"github.com/goccy/go-yaml"
 )
 
-var frontmatterDelimiter = "---"
+const frontmatterDelimiter = "---"
 
 type MarkdownDocument struct {
 	path       string
@@ -24,33 +25,20 @@ func markdownFromPath(path, sourceFile string, isTemplate bool) (*MarkdownDocume
 	if err != nil {
 		return nil, fmt.Errorf("failed to open %s: %w", sourceFile, err)
 	}
+	defer file.Close()
 
-	buffer := bytes.NewBuffer(nil)
-	scanner := bufio.NewScanner(file)
-
-	for scanner.Scan() {
-		line := scanner.Text()
-		if line == frontmatterDelimiter {
-			break
-		}
-
-		buffer.WriteString(line)
-		buffer.WriteByte('\n')
-	}
-	if err := scanner.Err(); err != nil {
-		return nil, fmt.Errorf("failed to read metadata: %w", err)
+	metadata, err := parseFrontMatter(file)
+	if err != nil {
+		return nil, err
 	}
 
-	var metadata Metadata
-	if err := yaml.Unmarshal(buffer.Bytes(), &metadata); err != nil {
-		return nil, fmt.Errorf("failed to parse metadata: %w", err)
-	}
+	fmt.Println(metadata)
 
 	return &MarkdownDocument{
 		path:       path,
 		sourceFile: sourceFile,
 		isTemplate: isTemplate,
-		metadata:   &metadata,
+		metadata:   metadata,
 	}, nil
 }
 
@@ -64,12 +52,16 @@ func (doc *MarkdownDocument) Content() (string, error) {
 		return "", fmt.Errorf("failed to read %s: %w", doc.sourceFile, err)
 	}
 
-	_, text, ok := bytes.Cut(content, []byte("\n---\n"))
-	if !ok {
-		return "", fmt.Errorf("failed to read content: %w", err)
+	if bytes.HasPrefix(content, []byte("---\n")) {
+		var ok bool
+
+		_, content, ok = bytes.Cut(content[4:], []byte("---\n"))
+		if !ok {
+			return "", fmt.Errorf("failed to read: invalid metadata")
+		}
 	}
 
-	return string(text), nil
+	return string(content), nil
 }
 
 func (doc *MarkdownDocument) Path() *Path {
@@ -82,4 +74,39 @@ func (doc *MarkdownDocument) Path() *Path {
 
 func (doc *MarkdownDocument) IsTemplate() bool {
 	return doc.isTemplate
+}
+
+func parseFrontMatter(r io.Reader) (*Metadata, error) {
+	scanner := bufio.NewScanner(r)
+	if !scanner.Scan() {
+		return &Metadata{}, nil
+	}
+
+	firstLine := scanner.Text()
+	if firstLine != frontmatterDelimiter {
+		return &Metadata{}, nil
+	}
+
+	yamlBuffer := new(bytes.Buffer)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if line == frontmatterDelimiter {
+			break
+		}
+
+		yamlBuffer.WriteString(line)
+		yamlBuffer.WriteByte('\n')
+	}
+
+	if err := scanner.Err(); err != nil {
+		return nil, fmt.Errorf("failed to read metadata: %w", err)
+	}
+
+	var metadata Metadata
+	err := yaml.Unmarshal(yamlBuffer.Bytes(), &metadata)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse metadata: %w", err)
+	}
+
+	return &metadata, nil
 }

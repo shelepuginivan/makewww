@@ -2,10 +2,10 @@ package builder
 
 import (
 	"github.com/shelepuginivan/makewww/pkg/config"
-	"github.com/shelepuginivan/makewww/pkg/source"
+	"github.com/shelepuginivan/makewww/pkg/resource"
 )
 
 type GlobalContext struct {
 	Config    *config.Config
-	Documents []source.Document
+	Resources []resource.Resource
 }

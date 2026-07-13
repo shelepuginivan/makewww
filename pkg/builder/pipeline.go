@@ -17,18 +17,6 @@ type Pipeline struct {
 	md         goldmark.Markdown
 }
 
-func NewPipeline(
-	global *GlobalContext,
-	components *template.Template,
-	layouts map[string]*template.Template,
-) *Pipeline {
-	return &Pipeline{
-		global:     global,
-		components: components,
-		layouts:    layouts,
-	}
-}
-
 func (p *Pipeline) Process(res resource.Resource, w io.Writer) error {
 	ok, err := p.tryCopyingAsIs(res, w)
 	if ok {
@@ -40,6 +28,9 @@ func (p *Pipeline) Process(res resource.Resource, w io.Writer) error {
 		content, err = p.renderTemplate(res)
 	} else {
 		content, err = res.Content()
+	}
+	if err != nil {
+		return err
 	}
 
 	switch r := res.(type) {

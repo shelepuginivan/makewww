@@ -105,9 +105,9 @@ func (p *Pipeline) convertMarkdown(res *resource.Markdown, content []byte, w io.
 
 	metadata := res.Metadata()
 
-	layout, exists := p.layouts[metadata.Template]
+	layout, exists := p.layouts[metadata.Layout]
 	if !exists {
-		return fmt.Errorf("layout %s does not exist", metadata.Template)
+		return fmt.Errorf("layout %s does not exist", metadata.Layout)
 	}
 
 	data := map[string]any{

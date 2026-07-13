@@ -12,7 +12,7 @@ type Metadata struct {
 	Description string    `yaml:"description"`
 	CreatedAt   time.Time `yaml:"created_at"`
 	Draft       bool      `yaml:"draft"`
-	Template    string    `yaml:"template"`
+	Layout      string    `yaml:"layout"`
 }
 
 type WithMetadata interface {

@@ -60,7 +60,7 @@ func (b *Builder) Build(src *source.Source, out *Output) error {
 	for _, res := range resources {
 		log.Println(res.Path().Relative())
 
-		file, err := out.CreateOutputFile(b.outputPath(res.Path()))
+		file, err := out.CreateOutputFile(b.outputPath(res))
 		if err != nil {
 			return err
 		}
@@ -75,11 +75,16 @@ func (b *Builder) Build(src *source.Source, out *Output) error {
 	return nil
 }
 
-func (b *Builder) outputPath(path *resource.Path) string {
-	if b.cfg.TransformDirs && path.Stem() != "index" {
-		return filepath.Join(path.RelativeNormalized(), "index.html")
+func (b *Builder) outputPath(res resource.Resource) string {
+	switch res.(type) {
+	case *resource.Raw:
+		return res.Path().Relative()
+	}
+
+	if b.cfg.TransformDirs && res.Path().Stem() != "index" {
+		return filepath.Join(res.Path().RelativeNormalized(), "index.html")
 	} else {
-		return path.Relative()
+		return res.Path().Relative()
 	}
 }
 

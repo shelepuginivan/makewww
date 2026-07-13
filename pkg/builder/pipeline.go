@@ -112,7 +112,7 @@ func (p *Pipeline) convertMarkdown(res *resource.Markdown, content []byte, w io.
 
 	data := map[string]any{
 		"Global":  p.global,
-		"Content": string(content),
+		"Content": buffer.String(),
 		"Document": map[string]any{
 			"Metadata": metadata,
 			"Path":     res.Path(),

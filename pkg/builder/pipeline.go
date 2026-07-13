@@ -1,18 +1,28 @@
 package builder
 
 import (
+	"bytes"
 	"io"
+	"text/template"
 
 	"github.com/shelepuginivan/makewww/pkg/resource"
 )
 
 type Pipeline struct {
-	global *GlobalContext
+	global     *GlobalContext
+	components *template.Template
+	layouts    map[string]*template.Template
 }
 
-func NewPipeline(global *GlobalContext) *Pipeline {
+func NewPipeline(
+	global *GlobalContext,
+	components *template.Template,
+	layouts map[string]*template.Template,
+) *Pipeline {
 	return &Pipeline{
-		global: global,
+		global:     global,
+		components: components,
+		layouts:    layouts,
 	}
 }
 
@@ -22,8 +32,11 @@ func (p *Pipeline) Process(res resource.Resource, w io.Writer) error {
 		return err
 	}
 
+	var content string
 	if res.IsTemplate() {
-		// render
+		content, err = p.renderTemplate(res)
+	} else {
+		content, err = res.Content()
 	}
 
 	// markdown => convert to html
@@ -50,4 +63,37 @@ func (p *Pipeline) tryCopyingAsIs(res resource.Resource, w io.Writer) (bool, err
 
 	_, err := writerTo.WriteTo(w)
 	return true, err
+}
+
+func (p *Pipeline) renderTemplate(res resource.Resource) (string, error) {
+	content, err := res.Content()
+	if err != nil {
+		return "", err
+	}
+
+	base, err := p.components.Clone()
+	if err != nil {
+		return "", err
+	}
+
+	tmpl, err := base.Parse(content)
+	if err != nil {
+		return "", err
+	}
+
+	data := map[string]any{
+		"Global": p.global,
+		"Path":   res.Path(),
+	}
+	if withMetadata, ok := res.(resource.WithMetadata); ok {
+		data["Metadata"] = withMetadata.Metadata()
+	}
+
+	buffer := new(bytes.Buffer)
+	err = tmpl.Execute(buffer, data)
+	if err != nil {
+		return "", err
+	}
+
+	return buffer.String(), nil
 }

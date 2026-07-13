@@ -20,7 +20,7 @@ type Pipeline struct {
 func (p *Pipeline) Process(res resource.Resource, w io.Writer) error {
 	ok, err := p.tryCopyingAsIs(res, w)
 	if ok {
-		return err
+		return fmt.Errorf("copy failed: %w", err)
 	}
 
 	var content []byte
@@ -65,17 +65,17 @@ func (p *Pipeline) tryCopyingAsIs(res resource.Resource, w io.Writer) (bool, err
 func (p *Pipeline) renderTemplate(res resource.Resource) ([]byte, error) {
 	content, err := res.Content()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get content: %w", err)
 	}
 
 	base, err := p.components.Clone()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to clone components: %w", err)
 	}
 
 	tmpl, err := base.Parse(string(content))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse template: %w", err)
 	}
 
 	data := map[string]any{
@@ -89,7 +89,7 @@ func (p *Pipeline) renderTemplate(res resource.Resource) ([]byte, error) {
 	buffer := new(bytes.Buffer)
 	err = tmpl.Execute(buffer, data)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to execute template: %w", err)
 	}
 
 	return buffer.Bytes(), nil
@@ -119,5 +119,10 @@ func (p *Pipeline) convertMarkdown(res *resource.Markdown, content []byte, w io.
 		},
 	}
 
-	return layout.Execute(w, data)
+	err = layout.Execute(w, data)
+	if err != nil {
+		return fmt.Errorf("failed to render layout: %w", err)
+	}
+
+	return nil
 }

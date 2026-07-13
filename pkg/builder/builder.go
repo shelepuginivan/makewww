@@ -2,6 +2,7 @@
 package builder
 
 import (
+	"log"
 	"path/filepath"
 
 	"github.com/shelepuginivan/makewww/pkg/config"
@@ -57,6 +58,8 @@ func (b *Builder) Build(src *source.Source, out *Output) error {
 	}
 
 	for _, res := range resources {
+		log.Println(res.Path().Relative())
+
 		file, err := out.CreateOutputFile(b.outputPath(res.Path()))
 		if err != nil {
 			return err

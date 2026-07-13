@@ -97,14 +97,20 @@ func (b *Builder) renderHTMLDocument(doc *source.HTMLDocument, global *GlobalCon
 	}
 	defer file.Close()
 
-	return b.execTemplateIfNeeded(file, doc, newDocumentContext(doc, global))
+	return b.execTemplateIfNeeded(file, doc, map[string]any{
+		"Global": global,
+		"Path":   doc.Path(),
+	})
 }
 
 func (b *Builder) renderMarkdownDocument(doc *source.MarkdownDocument, global *GlobalContext) error {
-	documentCtx := newDocumentContext(doc, global)
 	markdown := new(bytes.Buffer)
 
-	err := b.execTemplateIfNeeded(markdown, doc, documentCtx)
+	err := b.execTemplateIfNeeded(markdown, doc, map[string]any{
+		"Global":   global,
+		"Metadata": doc.Metadata(),
+		"Path":     doc.Path(),
+	})
 	if err != nil {
 		return err
 	}
@@ -140,7 +146,14 @@ func (b *Builder) renderMarkdownDocument(doc *source.MarkdownDocument, global *G
 		return err
 	}
 
-	return tmpl.Execute(file, newTemplateContext(html.String(), documentCtx))
+	return tmpl.Execute(file, map[string]any{
+		"Global": global,
+		"Source": html.String(),
+		"Document": map[string]any{
+			"Metadata": doc.Metadata(),
+			"Path":     doc.Path(),
+		},
+	})
 }
 
 func (b *Builder) renderTemplateDocument(doc *source.TemplateDocument, global *GlobalContext) error {
@@ -150,7 +163,10 @@ func (b *Builder) renderTemplateDocument(doc *source.TemplateDocument, global *G
 	}
 	defer file.Close()
 
-	return b.execTemplateIfNeeded(file, doc, newDocumentContext(doc, global))
+	return b.execTemplateIfNeeded(file, doc, map[string]any{
+		"Global": global,
+		"Path":   doc.Path(),
+	})
 }
 
 func (b *Builder) copyRawFile(raw *source.Raw) error {

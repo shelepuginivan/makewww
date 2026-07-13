@@ -1,4 +1,4 @@
-package source
+package resource
 
 import (
 	"path/filepath"
@@ -7,6 +7,10 @@ import (
 
 type Path struct {
 	relative string
+}
+
+func New(relative string) *Path {
+	return &Path{relative}
 }
 
 func (p *Path) Absolute() string {

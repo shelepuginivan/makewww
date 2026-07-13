@@ -1,4 +1,4 @@
-package source
+package resource
 
 import (
 	"fmt"
@@ -12,16 +12,12 @@ type HTMLDocument struct {
 	isTemplate bool
 }
 
-func htmlFromPath(path, sourceFile string, isTemplate bool) (*HTMLDocument, error) {
+func NewHTML(path, sourceFile string, isTemplate bool) (*HTMLDocument, error) {
 	return &HTMLDocument{
 		path:       path,
 		sourceFile: sourceFile,
 		isTemplate: isTemplate,
 	}, nil
-}
-
-func (doc *HTMLDocument) Metadata() *Metadata {
-	return &Metadata{}
 }
 
 func (doc *HTMLDocument) Content() (string, error) {
@@ -33,11 +29,11 @@ func (doc *HTMLDocument) Content() (string, error) {
 }
 
 func (doc *HTMLDocument) Path() *Path {
-	path := doc.path
+	p := doc.path
 	if doc.isTemplate {
-		path = strings.TrimSuffix(doc.path, ".tmpl")
+		p = strings.TrimSuffix(doc.path, ".tmpl")
 	}
-	return &Path{path}
+	return &Path{p}
 }
 
 func (doc *HTMLDocument) IsTemplate() bool {

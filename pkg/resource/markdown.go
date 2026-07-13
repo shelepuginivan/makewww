@@ -1,4 +1,4 @@
-package source
+package resource
 
 import (
 	"bufio"
@@ -7,8 +7,6 @@ import (
 	"io"
 	"os"
 	"strings"
-
-	"github.com/goccy/go-yaml"
 )
 
 const frontmatterDelimiter = "---"
@@ -20,7 +18,7 @@ type MarkdownDocument struct {
 	metadata   *Metadata
 }
 
-func markdownFromPath(path, sourceFile string, isTemplate bool) (*MarkdownDocument, error) {
+func NewMarkdown(path, sourceFile string, isTemplate bool) (*MarkdownDocument, error) {
 	file, err := os.Open(sourceFile)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open %s: %w", sourceFile, err)
@@ -63,11 +61,11 @@ func (doc *MarkdownDocument) Content() (string, error) {
 }
 
 func (doc *MarkdownDocument) Path() *Path {
-	path := doc.path
+	p := doc.path
 	if doc.isTemplate {
-		path = strings.TrimSuffix(doc.path, ".tmpl")
+		p = strings.TrimSuffix(doc.path, ".tmpl")
 	}
-	return &Path{strings.TrimSuffix(path, ".md") + ".html"}
+	return &Path{strings.TrimSuffix(p, ".md") + ".html"}
 }
 
 func (doc *MarkdownDocument) IsTemplate() bool {
@@ -100,11 +98,10 @@ func parseFrontMatter(r io.Reader) (*Metadata, error) {
 		return nil, fmt.Errorf("failed to read metadata: %w", err)
 	}
 
-	var metadata Metadata
-	err := yaml.Unmarshal(yamlBuffer.Bytes(), &metadata)
+	meta, err := metadataFromYAML(yamlBuffer.Bytes())
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse metadata: %w", err)
 	}
 
-	return &metadata, nil
+	return meta, nil
 }

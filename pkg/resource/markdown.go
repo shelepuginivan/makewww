@@ -11,14 +11,14 @@ import (
 
 const frontmatterDelimiter = "---"
 
-type MarkdownDocument struct {
+type Markdown struct {
 	path       string
 	sourceFile string
 	isTemplate bool
 	metadata   *Metadata
 }
 
-func NewMarkdown(path, sourceFile string, isTemplate bool) (*MarkdownDocument, error) {
+func NewMarkdown(path, sourceFile string, isTemplate bool) (*Markdown, error) {
 	file, err := os.Open(sourceFile)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open %s: %w", sourceFile, err)
@@ -30,7 +30,7 @@ func NewMarkdown(path, sourceFile string, isTemplate bool) (*MarkdownDocument, e
 		return nil, err
 	}
 
-	return &MarkdownDocument{
+	return &Markdown{
 		path:       path,
 		sourceFile: sourceFile,
 		isTemplate: isTemplate,
@@ -38,14 +38,14 @@ func NewMarkdown(path, sourceFile string, isTemplate bool) (*MarkdownDocument, e
 	}, nil
 }
 
-func (doc *MarkdownDocument) Metadata() *Metadata {
-	return doc.metadata
+func (res *Markdown) Metadata() *Metadata {
+	return res.metadata
 }
 
-func (doc *MarkdownDocument) Content() ([]byte, error) {
-	content, err := os.ReadFile(doc.sourceFile)
+func (res *Markdown) Content() ([]byte, error) {
+	content, err := os.ReadFile(res.sourceFile)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read %s: %w", doc.sourceFile, err)
+		return nil, fmt.Errorf("failed to read %s: %w", res.sourceFile, err)
 	}
 
 	if bytes.HasPrefix(content, []byte("---\n")) {
@@ -60,16 +60,16 @@ func (doc *MarkdownDocument) Content() ([]byte, error) {
 	return content, nil
 }
 
-func (doc *MarkdownDocument) Path() *Path {
-	p := doc.path
-	if doc.isTemplate {
-		p = strings.TrimSuffix(doc.path, ".tmpl")
+func (res *Markdown) Path() *Path {
+	p := res.path
+	if res.isTemplate {
+		p = strings.TrimSuffix(res.path, ".tmpl")
 	}
 	return &Path{strings.TrimSuffix(p, ".md") + ".html"}
 }
 
-func (doc *MarkdownDocument) IsTemplate() bool {
-	return doc.isTemplate
+func (res *Markdown) IsTemplate() bool {
+	return res.isTemplate
 }
 
 func parseFrontMatter(r io.Reader) (*Metadata, error) {

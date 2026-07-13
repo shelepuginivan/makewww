@@ -43,7 +43,7 @@ func (p *Pipeline) Process(res resource.Resource, w io.Writer) error {
 	}
 
 	switch r := res.(type) {
-	case *resource.MarkdownDocument:
+	case *resource.Markdown:
 		err = p.convertMarkdown(r, content, w)
 	default:
 		_, err = w.Write(content)
@@ -58,7 +58,7 @@ func (p *Pipeline) tryCopyingAsIs(res resource.Resource, w io.Writer) (bool, err
 	}
 
 	switch res.(type) {
-	case *resource.MarkdownDocument:
+	case *resource.Markdown:
 		return false, nil
 	}
 
@@ -104,7 +104,7 @@ func (p *Pipeline) renderTemplate(res resource.Resource) ([]byte, error) {
 	return buffer.Bytes(), nil
 }
 
-func (p *Pipeline) convertMarkdown(res *resource.MarkdownDocument, content []byte, w io.Writer) error {
+func (p *Pipeline) convertMarkdown(res *resource.Markdown, content []byte, w io.Writer) error {
 	buffer := new(bytes.Buffer)
 
 	err := p.md.Convert(content, buffer)

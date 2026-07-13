@@ -6,36 +6,36 @@ import (
 	"strings"
 )
 
-type HTMLDocument struct {
+type HTML struct {
 	path       string
 	sourceFile string
 	isTemplate bool
 }
 
-func NewHTML(path, sourceFile string, isTemplate bool) (*HTMLDocument, error) {
-	return &HTMLDocument{
+func NewHTML(path, sourceFile string, isTemplate bool) (*HTML, error) {
+	return &HTML{
 		path:       path,
 		sourceFile: sourceFile,
 		isTemplate: isTemplate,
 	}, nil
 }
 
-func (doc *HTMLDocument) Content() ([]byte, error) {
-	content, err := os.ReadFile(doc.sourceFile)
+func (res *HTML) Content() ([]byte, error) {
+	content, err := os.ReadFile(res.sourceFile)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read %s: %w", doc.sourceFile, err)
+		return nil, fmt.Errorf("failed to read %s: %w", res.sourceFile, err)
 	}
 	return content, nil
 }
 
-func (doc *HTMLDocument) Path() *Path {
-	p := doc.path
-	if doc.isTemplate {
-		p = strings.TrimSuffix(doc.path, ".tmpl")
+func (res *HTML) Path() *Path {
+	p := res.path
+	if res.isTemplate {
+		p = strings.TrimSuffix(res.path, ".tmpl")
 	}
 	return &Path{p}
 }
 
-func (doc *HTMLDocument) IsTemplate() bool {
-	return doc.isTemplate
+func (res *HTML) IsTemplate() bool {
+	return res.isTemplate
 }

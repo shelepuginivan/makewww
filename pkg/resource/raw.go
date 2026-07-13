@@ -20,8 +20,8 @@ func NewRaw(path, sourceFile string, isTemplate bool) *Raw {
 	}
 }
 
-func (doc *Raw) CopyTo(w io.Writer) error {
-	file, err := os.Open(doc.sourceFile)
+func (res *Raw) CopyTo(w io.Writer) error {
+	file, err := os.Open(res.sourceFile)
 	if err != nil {
 		return fmt.Errorf("failed to open raw document: %w", err)
 	}
@@ -34,18 +34,18 @@ func (doc *Raw) CopyTo(w io.Writer) error {
 	return nil
 }
 
-func (doc *Raw) Content() ([]byte, error) {
-	content, err := os.ReadFile(doc.sourceFile)
+func (res *Raw) Content() ([]byte, error) {
+	content, err := os.ReadFile(res.sourceFile)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read %s: %w", doc.sourceFile, err)
+		return nil, fmt.Errorf("failed to read %s: %w", res.sourceFile, err)
 	}
 	return content, nil
 }
 
-func (doc *Raw) IsTemplate() bool {
-	return doc.isTemplate
+func (res *Raw) IsTemplate() bool {
+	return res.isTemplate
 }
 
-func (doc *Raw) Path() *Path {
-	return &Path{doc.path}
+func (res *Raw) Path() *Path {
+	return &Path{res.path}
 }

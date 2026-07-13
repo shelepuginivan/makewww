@@ -22,7 +22,7 @@ type Source struct {
 	root *os.Root
 }
 
-func FromProjectRoot(root string) (*Source, error) {
+func New(root string) (*Source, error) {
 	r, err := os.OpenRoot(root)
 	if err != nil {
 		return nil, err

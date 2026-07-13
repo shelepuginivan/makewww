@@ -10,7 +10,7 @@ type Output struct {
 	root *os.Root
 }
 
-func outputFromRoot(root string) (*Output, error) {
+func NewOutput(root string) (*Output, error) {
 	if err := os.MkdirAll(root, 0755); err != nil {
 		return nil, err
 	}

@@ -5,10 +5,21 @@ import (
 
 	"github.com/shelepuginivan/makewww/pkg/builder"
 	"github.com/shelepuginivan/makewww/pkg/config"
+	"github.com/shelepuginivan/makewww/pkg/source"
 )
 
 func main() {
 	cfg, err := config.Parse()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	src, err := source.New(cfg.Dir)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	out, err := builder.NewOutput(cfg.Output)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -18,7 +29,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if err := builder.Build(); err != nil {
+	err = builder.Build(src, out)
+	if err != nil {
 		log.Fatal(err)
 	}
 }

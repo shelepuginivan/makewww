@@ -15,7 +15,7 @@ import (
 const (
 	componentsDir = "components"
 	contentDir    = "content"
-	templatesDir  = "templates"
+	layoutsDir    = "layouts"
 )
 
 type Source struct {
@@ -65,16 +65,34 @@ func (src *Source) Resources() ([]resource.Resource, error) {
 	return resources, nil
 }
 
-func (src *Source) GetTemplate(path string) (string, error) {
-	path = filepath.Join(templatesDir, path)
-	content, err := src.root.ReadFile(path)
+func (src *Source) Layouts() (map[string]*template.Template, error) {
+	components, err := src.Components()
 	if err != nil {
-		return "", fmt.Errorf("failed to read template: %w", err)
+		return nil, fmt.Errorf("failed to get components: %w", err)
 	}
-	return string(content), nil
+
+	pattern := filepath.Join(src.root.Name(), layoutsDir, "*.tmpl")
+	layoutPaths, _ := filepath.Glob(pattern)
+	layouts := make(map[string]*template.Template, len(layoutPaths))
+
+	for _, path := range layoutPaths {
+		base, err := components.Clone()
+		if err != nil {
+			return nil, fmt.Errorf("failed to clone components: %w", err)
+		}
+
+		layout, err := base.ParseFiles(path)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse %s: %w", path, err)
+		}
+
+		layouts[path] = layout
+	}
+
+	return layouts, nil
 }
 
-func (src *Source) GetComponents() (*template.Template, error) {
+func (src *Source) Components() (*template.Template, error) {
 	pattern := filepath.Join(src.root.Name(), componentsDir, "*.tmpl")
 	files, _ := filepath.Glob(pattern)
 	tmpl := template.New("components").Funcs(tmplfn.FuncMap)

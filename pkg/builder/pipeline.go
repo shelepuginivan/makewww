@@ -2,16 +2,19 @@ package builder
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"text/template"
 
 	"github.com/shelepuginivan/makewww/pkg/resource"
+	"github.com/yuin/goldmark"
 )
 
 type Pipeline struct {
 	global     *GlobalContext
 	components *template.Template
 	layouts    map[string]*template.Template
+	md         goldmark.Markdown
 }
 
 func NewPipeline(
@@ -39,11 +42,14 @@ func (p *Pipeline) Process(res resource.Resource, w io.Writer) error {
 		content, err = res.Content()
 	}
 
-	// markdown => convert to html
+	switch r := res.(type) {
+	case *resource.MarkdownDocument:
+		err = p.convertMarkdown(r, content, w)
+	default:
+		_, err = w.Write(content)
+	}
 
-	// write to w
-
-	return nil
+	return err
 }
 
 func (p *Pipeline) tryCopyingAsIs(res resource.Resource, w io.Writer) (bool, error) {
@@ -96,4 +102,31 @@ func (p *Pipeline) renderTemplate(res resource.Resource) ([]byte, error) {
 	}
 
 	return buffer.Bytes(), nil
+}
+
+func (p *Pipeline) convertMarkdown(res *resource.MarkdownDocument, content []byte, w io.Writer) error {
+	buffer := new(bytes.Buffer)
+
+	err := p.md.Convert(content, buffer)
+	if err != nil {
+		return err
+	}
+
+	metadata := res.Metadata()
+
+	layout, exists := p.layouts[metadata.Template]
+	if !exists {
+		return fmt.Errorf("layout %s does not exist", metadata.Template)
+	}
+
+	data := map[string]any{
+		"Global":  p.global,
+		"Content": string(content),
+		"Document": map[string]any{
+			"Metadata": metadata,
+			"Path":     res.Path(),
+		},
+	}
+
+	return layout.Execute(w, data)
 }

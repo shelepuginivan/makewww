@@ -81,12 +81,18 @@ func (src *Source) Layouts() (map[string]*template.Template, error) {
 			return nil, fmt.Errorf("failed to clone components: %w", err)
 		}
 
-		layout, err := base.ParseFiles(path)
+		content, err := os.ReadFile(path)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read %s: %w", path, err)
+		}
+
+		layout, err := base.Parse(string(content))
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse %s: %w", path, err)
 		}
 
-		layouts[path] = layout
+		layoutName := filepath.Base(path)
+		layouts[layoutName] = layout
 	}
 
 	return layouts, nil

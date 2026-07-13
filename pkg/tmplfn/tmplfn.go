@@ -7,6 +7,14 @@ import (
 )
 
 var FuncMap = template.FuncMap{
+	// Resource manipulation.
+	"draft":             draft,
+	"in_path":           inPath,
+	"latest":            latest,
+	"not_draft":         notDraft,
+	"sort_latest_first": sortLatestFirst,
+
+	// Misc.
 	"props": props,
 }
 

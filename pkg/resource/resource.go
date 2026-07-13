@@ -5,7 +5,7 @@ import "strings"
 
 type Resource interface {
 	Path() *Path
-	Content() (string, error)
+	Content() ([]byte, error)
 	IsTemplate() bool
 }
 

@@ -42,10 +42,10 @@ func (doc *MarkdownDocument) Metadata() *Metadata {
 	return doc.metadata
 }
 
-func (doc *MarkdownDocument) Content() (string, error) {
+func (doc *MarkdownDocument) Content() ([]byte, error) {
 	content, err := os.ReadFile(doc.sourceFile)
 	if err != nil {
-		return "", fmt.Errorf("failed to read %s: %w", doc.sourceFile, err)
+		return nil, fmt.Errorf("failed to read %s: %w", doc.sourceFile, err)
 	}
 
 	if bytes.HasPrefix(content, []byte("---\n")) {
@@ -53,11 +53,11 @@ func (doc *MarkdownDocument) Content() (string, error) {
 
 		_, content, ok = bytes.Cut(content[4:], []byte("---\n"))
 		if !ok {
-			return "", fmt.Errorf("failed to read: invalid metadata")
+			return nil, fmt.Errorf("failed to read: invalid metadata")
 		}
 	}
 
-	return string(content), nil
+	return content, nil
 }
 
 func (doc *MarkdownDocument) Path() *Path {

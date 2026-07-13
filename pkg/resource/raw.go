@@ -34,12 +34,12 @@ func (doc *Raw) CopyTo(w io.Writer) error {
 	return nil
 }
 
-func (doc *Raw) Content() (string, error) {
+func (doc *Raw) Content() ([]byte, error) {
 	content, err := os.ReadFile(doc.sourceFile)
 	if err != nil {
-		return "", fmt.Errorf("failed to read %s: %w", doc.sourceFile, err)
+		return nil, fmt.Errorf("failed to read %s: %w", doc.sourceFile, err)
 	}
-	return string(content), nil
+	return content, nil
 }
 
 func (doc *Raw) IsTemplate() bool {

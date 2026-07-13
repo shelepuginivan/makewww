@@ -20,12 +20,12 @@ func NewHTML(path, sourceFile string, isTemplate bool) (*HTMLDocument, error) {
 	}, nil
 }
 
-func (doc *HTMLDocument) Content() (string, error) {
+func (doc *HTMLDocument) Content() ([]byte, error) {
 	content, err := os.ReadFile(doc.sourceFile)
 	if err != nil {
-		return "", fmt.Errorf("failed to read %s: %w", doc.sourceFile, err)
+		return nil, fmt.Errorf("failed to read %s: %w", doc.sourceFile, err)
 	}
-	return string(content), nil
+	return content, nil
 }
 
 func (doc *HTMLDocument) Path() *Path {

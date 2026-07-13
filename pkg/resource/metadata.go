@@ -15,6 +15,10 @@ type Metadata struct {
 	Template    string    `yaml:"template"`
 }
 
+type WithMetadata interface {
+	Metadata() *Metadata
+}
+
 func metadataFromYAML(data []byte) (*Metadata, error) {
 	var metadata Metadata
 

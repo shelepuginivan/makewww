@@ -32,7 +32,7 @@ func (p *Pipeline) Process(res resource.Resource, w io.Writer) error {
 		return err
 	}
 
-	var content string
+	var content []byte
 	if res.IsTemplate() {
 		content, err = p.renderTemplate(res)
 	} else {
@@ -65,20 +65,20 @@ func (p *Pipeline) tryCopyingAsIs(res resource.Resource, w io.Writer) (bool, err
 	return true, err
 }
 
-func (p *Pipeline) renderTemplate(res resource.Resource) (string, error) {
+func (p *Pipeline) renderTemplate(res resource.Resource) ([]byte, error) {
 	content, err := res.Content()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	base, err := p.components.Clone()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	tmpl, err := base.Parse(content)
+	tmpl, err := base.Parse(string(content))
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	data := map[string]any{
@@ -92,8 +92,8 @@ func (p *Pipeline) renderTemplate(res resource.Resource) (string, error) {
 	buffer := new(bytes.Buffer)
 	err = tmpl.Execute(buffer, data)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return buffer.String(), nil
+	return buffer.Bytes(), nil
 }

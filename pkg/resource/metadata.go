@@ -8,11 +8,11 @@ import (
 )
 
 type Metadata struct {
-	Title       string    `yaml:"title"`
-	Description string    `yaml:"description"`
-	CreatedAt   time.Time `yaml:"created_at"`
-	Draft       bool      `yaml:"draft"`
-	Layout      string    `yaml:"layout"`
+	Title     string    `yaml:"title"`
+	Summary   string    `yaml:"summary"`
+	CreatedAt time.Time `yaml:"created_at"`
+	Draft     bool      `yaml:"draft"`
+	Layout    string    `yaml:"layout"`
 }
 
 type WithMetadata interface {

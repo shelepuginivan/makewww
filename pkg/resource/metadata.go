@@ -11,6 +11,7 @@ type Metadata struct {
 	Title     string    `yaml:"title"`
 	Summary   string    `yaml:"summary"`
 	CreatedAt time.Time `yaml:"created_at"`
+	Order     int       `yaml:"order"`
 	Draft     bool      `yaml:"draft"`
 	Layout    string    `yaml:"layout"`
 }

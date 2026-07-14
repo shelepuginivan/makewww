@@ -102,6 +102,9 @@ func markdownParserFromConfig(cfg *config.Markdown) goldmark.Markdown {
 	if cfg.Extensions.GFM {
 		extensions = append(extensions, extension.GFM)
 	}
+	if cfg.Extensions.Typography {
+		extensions = append(extensions, extension.Typographer)
+	}
 
 	if cfg.Parser.Attributes {
 		parserOpts = append(parserOpts, parser.WithAttribute())

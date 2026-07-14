@@ -12,6 +12,7 @@ type MarkdownExtensions struct {
 	Definitions bool
 	Footnotes   bool
 	GFM         bool
+	Typography  bool
 }
 
 type MarkdownParser struct {
@@ -52,6 +53,7 @@ func Parse() (*Config, error) {
 	flag.BoolVar(&cfg.Markdown.Extensions.Definitions, "md-ext-definitions", false, "whether to enable definition lists (PHP Markdown Extra)")
 	flag.BoolVar(&cfg.Markdown.Extensions.Footnotes, "md-ext-footnotes", false, "whether to enable footnotes (PHP Markdown Extra)")
 	flag.BoolVar(&cfg.Markdown.Extensions.GFM, "md-ext-gfm", false, "whether to enable GFM (GitHub Flavored Markdown) extensions")
+	flag.BoolVar(&cfg.Markdown.Extensions.Typography, "md-ext-typography", false, "whether to enable smart typography extension")
 	flag.BoolVar(&cfg.Markdown.Parser.Attributes, "md-parse-attrs", false, "whether to parse heading custom attributes")
 	flag.BoolVar(&cfg.Markdown.Parser.AutoHeadingID, "md-parse-heading-id", false, "whether to enable auto heading IDs")
 	flag.BoolVar(&cfg.Markdown.Render.HardWraps, "md-render-hardwraps", false, "whether to render newlines as <br>")

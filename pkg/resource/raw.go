@@ -20,7 +20,7 @@ func NewRaw(path, sourceFile string, isTemplate bool) *Raw {
 	}
 }
 
-func (res *Raw) CopyTo(w io.Writer) error {
+func (res *Raw) WriteContent(w io.Writer) error {
 	file, err := os.Open(res.sourceFile)
 	if err != nil {
 		return fmt.Errorf("failed to open raw document: %w", err)
@@ -32,6 +32,15 @@ func (res *Raw) CopyTo(w io.Writer) error {
 	}
 
 	return nil
+}
+
+func (res *Raw) WriteTo(w io.Writer) (int64, error) {
+	file, err := os.Open(res.sourceFile)
+	if err != nil {
+		return 0, fmt.Errorf("failed to open raw document: %w", err)
+	}
+	defer file.Close()
+	return file.WriteTo(w)
 }
 
 func (res *Raw) Content() ([]byte, error) {

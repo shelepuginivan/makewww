@@ -67,6 +67,27 @@ func sortLatestFirst(resources []resource.Resource) []resource.Resource {
 	return resources
 }
 
+func sortByOrder(resources []resource.Resource) []resource.Resource {
+	slices.SortFunc(resources, func(a, b resource.Resource) int {
+		aMeta, ok := a.(resource.WithMetadata)
+		if !ok {
+			return 0
+		}
+
+		bMeta, ok := b.(resource.WithMetadata)
+		if !ok {
+			return 0
+		}
+
+		if aMeta.Metadata().Order > bMeta.Metadata().Order {
+			return 1
+		} else {
+			return -1
+		}
+	})
+	return resources
+}
+
 func draft(resources []resource.Resource) []resource.Resource {
 	out := make([]resource.Resource, 0, len(resources))
 

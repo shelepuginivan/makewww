@@ -13,6 +13,7 @@ var FuncMap = template.FuncMap{
 	"latest":            latest,
 	"not_draft":         notDraft,
 	"sort_latest_first": sortLatestFirst,
+	"sort_by_order":     sortByOrder,
 
 	// Misc.
 	"props": props,

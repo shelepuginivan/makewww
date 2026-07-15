@@ -20,7 +20,11 @@ type Pipeline struct {
 func (p *Pipeline) Process(res resource.Resource, w io.Writer) error {
 	ok, err := p.tryCopyingAsIs(res, w)
 	if ok {
-		return fmt.Errorf("copy failed: %w", err)
+		if err != nil {
+			return fmt.Errorf("copy failed: %w", err)
+		} else {
+			return nil
+		}
 	}
 
 	var content []byte

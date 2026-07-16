@@ -2,8 +2,9 @@
 package tmplfn
 
 import (
-	"fmt"
 	"html/template"
+	"strings"
+	"time"
 )
 
 var FuncMap = template.FuncMap{
@@ -15,28 +16,36 @@ var FuncMap = template.FuncMap{
 	"sort_latest_first": sortLatestFirst,
 	"sort_by_order":     sortByOrder,
 
+	// Strings.
+	"contains":    pipeline(strings.Contains),
+	"has_prefix":  pipeline(strings.HasPrefix),
+	"has_suffix":  pipeline(strings.HasSuffix),
+	"trim":        strings.TrimSpace,
+	"trim_prefix": pipeline(strings.TrimPrefix),
+	"trim_suffix": pipeline(strings.TrimSuffix),
+	"lower":       strings.ToLower,
+	"title":       strings.ToTitle,
+	"upper":       strings.ToUpper,
+	"index":       pipeline(strings.Index),
+	"replace":     replace,
+
 	// Misc.
 	"props": props,
+	"now":   time.Now,
+	"seq":   seq,
 }
 
-func props(keyval ...any) (map[string]any, error) {
-	if len(keyval)%2 != 0 {
-		return nil, fmt.Errorf("expected even number of arguments")
+// pipeline accepts a function with 2 arguments and returns a wrapper with
+// these arguments swapped. This can convert many functions to a pipeline form
+// for templates. For example
+//
+//	strings.Contains(summary, "golang")
+//
+// wrapped in pipeline, this can be used as follows:
+//
+//	{{ .Summary | contains "golang" }}
+func pipeline[T, U, R any](fn func(T, U) R) func(U, T) R {
+	return func(u U, t T) R {
+		return fn(t, u)
 	}
-
-	res := make(map[string]any)
-
-	for i := 0; i < len(keyval); i += 2 {
-		key := keyval[i]
-		val := keyval[i+1]
-
-		keyStr, ok := key.(string)
-		if !ok {
-			return nil, fmt.Errorf("keys must be strings")
-		}
-
-		res[keyStr] = val
-	}
-
-	return res, nil
 }

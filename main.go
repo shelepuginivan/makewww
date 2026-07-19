@@ -20,7 +20,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	out, err := output.New(cfg.Output)
+	out, err := output.NewFS(cfg.Output)
 	if err != nil {
 		log.Fatal(err)
 	}

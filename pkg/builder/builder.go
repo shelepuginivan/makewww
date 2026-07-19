@@ -31,7 +31,7 @@ func New(cfg *config.Config) (*Builder, error) {
 	}, nil
 }
 
-func (b *Builder) Build(src *source.Source, out *output.Output) error {
+func (b *Builder) Build(src *source.Source, out output.Output) error {
 	components, err := src.Components()
 	if err != nil {
 		return err
@@ -62,7 +62,7 @@ func (b *Builder) Build(src *source.Source, out *output.Output) error {
 	for _, res := range resources {
 		log.Println(res.Path().Relative())
 
-		file, err := out.CreateOutputFile(b.outputPath(res))
+		file, err := out.WriterForPath(b.outputPath(res))
 		if err != nil {
 			return err
 		}

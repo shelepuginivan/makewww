@@ -50,23 +50,24 @@ func Parse() (*Config, error) {
 
 	var cfg Config
 
-	flag.StringVar(&cfg.Dir, "dir", cwd, "directory to build the website from")
-	flag.StringVar(&cfg.Output, "output", filepath.Join(cwd, "dist"), "output directory for the website")
-	flag.BoolVar(&cfg.TransformDirs, "transform-dirs", false, "whether to generate directories with index.html")
+	flag.StringVar(&cfg.Dir, "src", cwd, "")
+	flag.StringVar(&cfg.Output, "out", filepath.Join(cwd, "dist"), "")
+	flag.BoolVar(&cfg.TransformDirs, "transform-dirs", false, "")
 	flag.Var(&cfg.TransformIgnore, "transform-ignore", "")
 
-	flag.BoolVar(&cfg.Markdown.Extensions.Definitions, "md-ext-definitions", false, "whether to enable definition lists (PHP Markdown Extra)")
-	flag.BoolVar(&cfg.Markdown.Extensions.Footnotes, "md-ext-footnotes", false, "whether to enable footnotes (PHP Markdown Extra)")
-	flag.BoolVar(&cfg.Markdown.Extensions.Links, "md-ext-links", false, "whether to enable link detection extension")
-	flag.BoolVar(&cfg.Markdown.Extensions.Strikethrough, "md-ext-strikethrough", false, "whether to enable strikethrough extension")
-	flag.BoolVar(&cfg.Markdown.Extensions.TaskList, "md-ext-tasklist", false, "whether to enable tasklist extension")
-	flag.BoolVar(&cfg.Markdown.Extensions.Tables, "md-ext-tables", false, "whether to enable tables extension")
-	flag.BoolVar(&cfg.Markdown.Extensions.Typography, "md-ext-typography", false, "whether to enable smart typography extension")
-	flag.BoolVar(&cfg.Markdown.Parser.Attributes, "md-parse-attrs", false, "whether to parse heading custom attributes")
-	flag.BoolVar(&cfg.Markdown.Parser.AutoHeadingID, "md-parse-heading-id", false, "whether to enable auto heading IDs")
-	flag.BoolVar(&cfg.Markdown.Render.HardWraps, "md-render-hardwraps", false, "whether to render newlines as <br>")
-	flag.BoolVar(&cfg.Markdown.Render.Unsafe, "md-render-unsafe", false, "whether to render raw HTML")
+	flag.BoolVar(&cfg.Markdown.Extensions.Definitions, "md-ext-definitions", false, "")
+	flag.BoolVar(&cfg.Markdown.Extensions.Footnotes, "md-ext-footnotes", false, "")
+	flag.BoolVar(&cfg.Markdown.Extensions.Links, "md-ext-links", false, "")
+	flag.BoolVar(&cfg.Markdown.Extensions.Strikethrough, "md-ext-strikethrough", false, "")
+	flag.BoolVar(&cfg.Markdown.Extensions.Tables, "md-ext-tables", false, "")
+	flag.BoolVar(&cfg.Markdown.Extensions.TaskList, "md-ext-tasklist", false, "")
+	flag.BoolVar(&cfg.Markdown.Extensions.Typography, "md-ext-typography", false, "")
+	flag.BoolVar(&cfg.Markdown.Parser.Attributes, "md-parse-attrs", false, "")
+	flag.BoolVar(&cfg.Markdown.Parser.AutoHeadingID, "md-parse-heading-id", false, "")
+	flag.BoolVar(&cfg.Markdown.Render.HardWraps, "md-render-hardwraps", false, "")
+	flag.BoolVar(&cfg.Markdown.Render.Unsafe, "md-render-unsafe", false, "")
 
+	flag.Usage = usage
 	flag.Parse()
 
 	if len(cfg.TransformIgnore) == 0 {
@@ -74,4 +75,74 @@ func Parse() (*Config, error) {
 	}
 
 	return &cfg, nil
+}
+
+func usage() {
+	fmt.Fprint(flag.CommandLine.Output(), `makewww - extremely simple static site generator
+
+General options:
+
+  -src <dir>
+        Root directory of the website. Defaults to current working directory.
+
+  -out <dir>
+        Output directory for the website. Defaults to ./dist
+
+  -transform-dirs
+        Whether to transform paths to directory-style structure. If set,
+        paths like '/<name>.html' will be rewritten as '/<name>/index.html'.
+        Disabled by default.
+
+  -transform-ignore <base>
+        When using -transform-dirs, don't transform paths matching '<base>'.
+        Can be set multiple times. Defaults to ['index.html', '404.html'].
+
+
+Markdown options:
+
+  -md-ext-definitions
+        Markdown extension: definition lists (part of PHP Markdown Extra).
+        Disabled by default.
+
+  -md-ext-footnotes
+        Markdown extension: footnotes (part of PHP Markdown Extra).
+        Disabled by default.
+
+  -md-ext-links
+        Markdown extension: automatic links (part of GitHub Flavored Markdown).
+        Disabled by default.
+
+  -md-ext-strikethrough
+        Markdown extension: strikethrough (part of GitHub Flavored Markdown).
+        Disabled by default.
+
+  -md-ext-tables
+        Markdown extension: tables (part of GitHub Flavored Markdown).
+        Disabled by default.
+
+  -md-ext-tasklist
+        Markdown extension: task lists (part of GitHub Flavored Markdown).
+        Disabled by default.
+
+  -md-ext-typography
+        Markdown extension: smart typography.
+        Disabled by default.
+
+  -md-parse-attrs
+        Whether to enable custom attributes. Currently only headings support
+        attributes. Disabled by default.
+
+  -md-parse-heading-id
+        Whether to automatically insert 'id' attribute in headings.
+        Disabled by default.
+
+  -md-render-hardwraps
+        Whether to render line breaks as '<br>' HTML tags.
+        Disabled by default.
+
+  -md-render-unsafe
+        Whether to enable raw (and potentially unsafe) HTML in Markdown.
+        If this feature is disabled, raw HTML will be omitted from the
+        resulting document, otherwise it is copied as is. Disabled by default.
+`)
 }

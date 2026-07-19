@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 )
 
 type Raw struct {
@@ -56,5 +57,9 @@ func (res *Raw) IsTemplate() bool {
 }
 
 func (res *Raw) Path() *Path {
-	return &Path{res.path}
+	p := res.path
+	if res.isTemplate {
+		p = strings.TrimSuffix(res.path, ".tmpl")
+	}
+	return &Path{p}
 }

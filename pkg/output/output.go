@@ -16,6 +16,19 @@ func New(root string) (*Output, error) {
 		return nil, err
 	}
 
+	oldEntries, err := os.ReadDir(root)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, entry := range oldEntries {
+		entryPath := filepath.Join(root, entry.Name())
+
+		if err := os.RemoveAll(entryPath); err != nil {
+			return nil, err
+		}
+	}
+
 	r, err := os.OpenRoot(root)
 	if err != nil {
 		return nil, err

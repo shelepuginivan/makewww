@@ -1,4 +1,5 @@
-package builder
+// Package output provides primitives to output the built website.
+package output
 
 import (
 	"fmt"
@@ -10,7 +11,7 @@ type Output struct {
 	root *os.Root
 }
 
-func NewOutput(root string) (*Output, error) {
+func New(root string) (*Output, error) {
 	if err := os.MkdirAll(root, 0755); err != nil {
 		return nil, err
 	}

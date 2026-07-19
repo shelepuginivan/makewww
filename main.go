@@ -5,6 +5,7 @@ import (
 
 	"github.com/shelepuginivan/makewww/pkg/builder"
 	"github.com/shelepuginivan/makewww/pkg/config"
+	"github.com/shelepuginivan/makewww/pkg/output"
 	"github.com/shelepuginivan/makewww/pkg/source"
 )
 
@@ -19,7 +20,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	out, err := builder.NewOutput(cfg.Output)
+	out, err := output.New(cfg.Output)
 	if err != nil {
 		log.Fatal(err)
 	}

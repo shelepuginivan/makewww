@@ -7,6 +7,7 @@ import (
 	"slices"
 
 	"github.com/shelepuginivan/makewww/pkg/config"
+	"github.com/shelepuginivan/makewww/pkg/output"
 	"github.com/shelepuginivan/makewww/pkg/resource"
 	"github.com/shelepuginivan/makewww/pkg/source"
 	"github.com/yuin/goldmark"
@@ -30,7 +31,7 @@ func New(cfg *config.Config) (*Builder, error) {
 	}, nil
 }
 
-func (b *Builder) Build(src *source.Source, out *Output) error {
+func (b *Builder) Build(src *source.Source, out *output.Output) error {
 	components, err := src.Components()
 	if err != nil {
 		return err

@@ -4,6 +4,7 @@ package builder
 import (
 	"log"
 	"path/filepath"
+	"slices"
 
 	"github.com/shelepuginivan/makewww/pkg/config"
 	"github.com/shelepuginivan/makewww/pkg/resource"
@@ -76,15 +77,17 @@ func (b *Builder) Build(src *source.Source, out *Output) error {
 }
 
 func (b *Builder) outputPath(res resource.Resource) string {
+	path := res.Path()
+
 	switch res.(type) {
 	case *resource.Raw:
-		return res.Path().Relative()
+		return path.Relative()
 	}
 
-	if b.cfg.TransformDirs && res.Path().Stem() != "index" {
-		return filepath.Join(res.Path().RelativeNormalized(), "index.html")
+	if b.cfg.TransformDirs && !slices.Contains(b.cfg.TransformIgnore, path.Base()) {
+		return filepath.Join(path.RelativeNormalized(), "index.html")
 	} else {
-		return res.Path().Relative()
+		return path.Relative()
 	}
 }
 

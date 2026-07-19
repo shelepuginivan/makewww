@@ -34,10 +34,11 @@ type Markdown struct {
 }
 
 type Config struct {
-	Dir           string
-	Output        string
-	TransformDirs bool
-	Markdown      Markdown
+	Dir             string
+	Output          string
+	TransformDirs   bool
+	TransformIgnore SliceFlags
+	Markdown        Markdown
 }
 
 func Parse() (*Config, error) {
@@ -51,6 +52,7 @@ func Parse() (*Config, error) {
 	flag.StringVar(&cfg.Dir, "dir", cwd, "directory to build the website from")
 	flag.StringVar(&cfg.Output, "output", filepath.Join(cwd, "dist"), "output directory for the website")
 	flag.BoolVar(&cfg.TransformDirs, "transform-dirs", false, "whether to generate directories with index.html")
+	flag.Var(&cfg.TransformIgnore, "transform-ignore", "")
 
 	flag.BoolVar(&cfg.Markdown.Extensions.Definitions, "md-ext-definitions", false, "whether to enable definition lists (PHP Markdown Extra)")
 	flag.BoolVar(&cfg.Markdown.Extensions.Footnotes, "md-ext-footnotes", false, "whether to enable footnotes (PHP Markdown Extra)")
@@ -64,6 +66,10 @@ func Parse() (*Config, error) {
 	flag.BoolVar(&cfg.Markdown.Render.Unsafe, "md-render-unsafe", false, "whether to render raw HTML")
 
 	flag.Parse()
+
+	if len(cfg.TransformIgnore) == 0 {
+		cfg.TransformIgnore = append(cfg.TransformIgnore, "index.html", "404.html")
+	}
 
 	return &cfg, nil
 }

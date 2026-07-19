@@ -9,12 +9,13 @@ import (
 )
 
 type MarkdownExtensions struct {
-	Definitions bool
-	Footnotes   bool
-	GFM         bool
-	Links       bool
-	Tables      bool
-	Typography  bool
+	Definitions   bool
+	Footnotes     bool
+	Links         bool
+	Strikethrough bool
+	Tables        bool
+	TaskList      bool
+	Typography    bool
 }
 
 type MarkdownParser struct {
@@ -56,8 +57,9 @@ func Parse() (*Config, error) {
 
 	flag.BoolVar(&cfg.Markdown.Extensions.Definitions, "md-ext-definitions", false, "whether to enable definition lists (PHP Markdown Extra)")
 	flag.BoolVar(&cfg.Markdown.Extensions.Footnotes, "md-ext-footnotes", false, "whether to enable footnotes (PHP Markdown Extra)")
-	flag.BoolVar(&cfg.Markdown.Extensions.GFM, "md-ext-gfm", false, "whether to enable GFM (GitHub Flavored Markdown) extensions")
 	flag.BoolVar(&cfg.Markdown.Extensions.Links, "md-ext-links", false, "whether to enable link detection extension")
+	flag.BoolVar(&cfg.Markdown.Extensions.Strikethrough, "md-ext-strikethrough", false, "whether to enable strikethrough extension")
+	flag.BoolVar(&cfg.Markdown.Extensions.TaskList, "md-ext-tasklist", false, "whether to enable tasklist extension")
 	flag.BoolVar(&cfg.Markdown.Extensions.Tables, "md-ext-tables", false, "whether to enable tables extension")
 	flag.BoolVar(&cfg.Markdown.Extensions.Typography, "md-ext-typography", false, "whether to enable smart typography extension")
 	flag.BoolVar(&cfg.Markdown.Parser.Attributes, "md-parse-attrs", false, "whether to parse heading custom attributes")

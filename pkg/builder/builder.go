@@ -102,11 +102,14 @@ func markdownParserFromConfig(cfg *config.Markdown) goldmark.Markdown {
 	if cfg.Extensions.Footnotes {
 		extensions = append(extensions, extension.Footnote)
 	}
-	if cfg.Extensions.GFM {
-		extensions = append(extensions, extension.GFM)
-	}
 	if cfg.Extensions.Links {
 		extensions = append(extensions, extension.Linkify)
+	}
+	if cfg.Extensions.Strikethrough {
+		extensions = append(extensions, extension.Strikethrough)
+	}
+	if cfg.Extensions.TaskList {
+		extensions = append(extensions, extension.Strikethrough)
 	}
 	if cfg.Extensions.Tables {
 		extensions = append(extensions, extension.Table)

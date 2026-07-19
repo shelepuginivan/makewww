@@ -31,7 +31,7 @@ func New(cfg *config.Config) (*Builder, error) {
 	}, nil
 }
 
-func (b *Builder) Build(src *source.Source, out output.Output) error {
+func (b *Builder) Build(src source.Source, out output.Output) error {
 	components, err := src.Components()
 	if err != nil {
 		return err

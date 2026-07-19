@@ -15,7 +15,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	src, err := source.New(cfg.Dir)
+	src, err := source.NewFS(cfg.Dir)
 	if err != nil {
 		log.Fatal(err)
 	}
